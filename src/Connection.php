@@ -6,6 +6,7 @@ use DI\DependencyException;
 use DI\NotFoundException;
 use Exception;
 use rabbit\App;
+use rabbit\contract\InitInterface;
 use rabbit\core\ObjectFactory;
 use rabbit\db\ConnectionTrait;
 use rabbit\db\QueryBuilder;
@@ -19,7 +20,7 @@ use rabbit\pool\PoolManager;
  * Class Connection
  * @package rabbit\db\click
  */
-class Connection extends \rabbit\db\Connection implements ConnectionInterface
+class Connection extends \rabbit\db\Connection implements ConnectionInterface, InitInterface
 {
     use ConnectionTrait;
 
@@ -41,8 +42,13 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
         $this->lastTime = time();
         $this->connectionId = uniqid();
         $this->poolKey = $poolKey;
+    }
+
+    public function init()
+    {
         $this->createConnection();
     }
+
 
     /**
      * @param null $sql

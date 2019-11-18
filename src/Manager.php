@@ -15,6 +15,8 @@ use rabbit\db\click\pool\ClickPool;
 use rabbit\db\click\pool\ClickPoolConfig;
 use rabbit\db\ConnectionInterface;
 use rabbit\db\Exception;
+use rabbit\db\pool\PdoPool;
+use rabbit\db\pool\PdoPoolConfig;
 use rabbit\helper\ArrayHelper;
 
 /**
@@ -137,9 +139,9 @@ class Manager
                         'class' => $dbconfig['class'],
                         'dsn' => $dbconfig['dsn'],
                         'pool' => ObjectFactory::createObject([
-                            'class' => ClickPool::class,
+                            'class' => PdoPool::class,
                             'poolConfig' => ObjectFactory::createObject([
-                                'class' => ClickPoolConfig::class,
+                                'class' => PdoPoolConfig::class,
                                 'minActive' => intval($min / swoole_cpu_num()),
                                 'maxActive' => intval($max / swoole_cpu_num()),
                                 'maxWait' => $wait

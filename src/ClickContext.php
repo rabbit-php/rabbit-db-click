@@ -3,7 +3,6 @@
 
 namespace rabbit\db\click;
 
-
 use rabbit\core\Context;
 
 /**
