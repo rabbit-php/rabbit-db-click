@@ -23,6 +23,8 @@ class Command extends BaseCommand
 
     /** @var int fetch type result */
     public $fetchMode = 0;
+    /** @var int */
+    private $executed = null;
 
     /**
      * @param array $values
@@ -52,12 +54,18 @@ class Command extends BaseCommand
      */
     public function execute()
     {
-        $rawSql = $this->getRawSql();
+        if ($this->executed === null) {
+            $rawSql = $this->getRawSql();
 
-        if (strlen($rawSql) < $this->db->maxLog) {
-            $this->logQuery($rawSql, 'clickhouse');
+            if (strlen($rawSql) < $this->db->maxLog) {
+                $this->logQuery($rawSql, 'clickhouse');
+            }
+            return $this->db->pdo->execute($rawSql);
         }
-        return $this->db->pdo->execute($rawSql);
+        $this->logQuery("Inserted with SeasClick", 'clickhouse');
+        $res = $this->executed;
+        $this->executed = null;
+        return $res;
     }
 
 
@@ -220,9 +228,8 @@ class Command extends BaseCommand
      */
     public function insert($table, $columns)
     {
-        $params = [];
-        $sql = $this->db->getQueryBuilder()->insert($table, $columns, $params);
-        return $this->setSql($sql)->bindValues($params);
+        $this->executed = $this->db->pdo->insert($table, array_keys($columns), array_values($columns));
+        return $this;
     }
 
     /**
@@ -243,8 +250,8 @@ class Command extends BaseCommand
      */
     public function batchInsert($table, $columns, $rows)
     {
-        $sql = $this->db->getQueryBuilder()->batchInsert($table, $columns, $rows);
-        return $this->setSql($sql);
+        $this->executed = $this->db->pdo->insert($table, $columns, $rows);
+        return $this;
     }
 
     public function query()
