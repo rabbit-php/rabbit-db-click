@@ -146,7 +146,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
             null,
             ['clickhouse', 'localhost', '9000', '', '', []]
         );
-        $this->database = ArrayHelper::remove($query, 'dbname');
+        $this->database = ArrayHelper::remove($query, 'database');
         $compression = ArrayHelper::remove($query, 'compression');
         $client = new \SeasClick([
             "host" => $host,
