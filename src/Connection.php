@@ -4,11 +4,11 @@ namespace rabbit\db\click;
 
 use DI\DependencyException;
 use DI\NotFoundException;
-use Exception;
 use rabbit\App;
 use rabbit\contract\InitInterface;
 use rabbit\core\ObjectFactory;
 use rabbit\db\ConnectionTrait;
+use rabbit\db\Exception;
 use rabbit\db\QueryBuilder;
 use rabbit\exception\InvalidArgumentException;
 use rabbit\exception\NotSupportedException;
@@ -30,6 +30,8 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
     /** @var string */
     public $database = 'default';
 
+    protected $commandClass = Command::class;
+
     /**
      * Connection constructor.
      * @param string $dsn
@@ -47,25 +49,6 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
     public function init()
     {
         $this->createConnection();
-    }
-
-
-    /**
-     * @param null $sql
-     * @param array $params
-     * @return Command|\rabbit\db\Command
-     * @throws DependencyException
-     * @throws NotFoundException
-     */
-    public function createCommand($sql = null, $params = [])
-    {
-        /** @var Command $command */
-        $command = ObjectFactory::createObject(Command::class, [
-            'db' => $this,
-            'sql' => $sql,
-        ], false);
-
-        return $command->bindValues($params);
     }
 
     /**
@@ -146,7 +129,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
             null,
             ['clickhouse', 'localhost', '9000', '', '', []]
         );
-        $this->database = ArrayHelper::remove($query, 'database');
+        $this->database = ArrayHelper::remove($query, 'dbname');
         $compression = ArrayHelper::remove($query, 'compression');
         $client = new \SeasClick([
             "host" => $host,
