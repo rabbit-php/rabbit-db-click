@@ -60,7 +60,7 @@ class Command extends BaseCommand
             if (strlen($rawSql) < $this->db->maxLog) {
                 $this->logQuery($rawSql, 'clickhouse');
             }
-            return $this->db->pdo->execute($rawSql);
+            return $this->db->execute($rawSql);
         }
         $this->logQuery("Inserted with SeasClick", 'clickhouse');
         $res = $this->executed;
@@ -165,7 +165,7 @@ class Command extends BaseCommand
         $this->logQuery($rawSql);
 
         try {
-            $data = $this->db->pdo->select($rawSql);
+            $data = $this->db->select($rawSql);
             $result = $this->prepareResult($data, $method);
         } catch (Exception $e) {
             throw new DbException("Query error: " . $e->getMessage());
@@ -228,7 +228,7 @@ class Command extends BaseCommand
      */
     public function insert($table, $columns)
     {
-        $this->executed = $this->db->pdo->insert($table, array_keys($columns), array_values($columns));
+        $this->executed = $this->db->insert($table, array_keys($columns), array_values($columns));
         return $this;
     }
 
@@ -250,7 +250,7 @@ class Command extends BaseCommand
      */
     public function batchInsert($table, $columns, $rows)
     {
-        $this->executed = $this->db->pdo->insert($table, $columns, $rows);
+        $this->executed = $this->db->insert($table, $columns, $rows);
         return $this;
     }
 

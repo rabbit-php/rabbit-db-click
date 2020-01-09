@@ -13,6 +13,7 @@ use rabbit\db\QueryBuilder;
 use rabbit\exception\InvalidArgumentException;
 use rabbit\exception\NotSupportedException;
 use rabbit\helper\ArrayHelper;
+use rabbit\helper\ExceptionHelper;
 use rabbit\pool\ConnectionInterface;
 use rabbit\pool\PoolManager;
 
@@ -140,6 +141,26 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
             "passwd" => $this->password
         ]);
         return $client;
+    }
+
+    /**
+     * @param $name
+     * @param $arguments
+     */
+    public function __call($name, $arguments)
+    {
+        $attempt = 0;
+        while (true) {
+            try {
+                return $this->pdo->$name(...$arguments);
+            } catch (\Throwable $exception) {
+                App::error(ExceptionHelper::dumpExceptionToString($exception));
+                if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt)) {
+                    throw $exception;
+                }
+                $this->db->reconnect($attempt);
+            }
+        }
     }
 
     /**
