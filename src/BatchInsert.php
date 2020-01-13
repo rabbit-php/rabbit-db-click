@@ -67,7 +67,7 @@ class BatchInsert
     public function execute(): int
     {
         if ($this->rows) {
-            return $this->db->pdo->insert($this->table, $this->columns, $this->rows);
+            return $this->db->insert($this->table, $this->columns, $this->rows);
         }
         return 0;
     }
