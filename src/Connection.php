@@ -158,7 +158,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
                 if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt)) {
                     throw $exception;
                 }
-                $this->db->reconnect($attempt);
+                $this->reconnect($attempt);
             }
         }
     }
