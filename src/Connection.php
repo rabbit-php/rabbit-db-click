@@ -154,7 +154,6 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
             try {
                 return $this->pdo->$name(...$arguments);
             } catch (\Throwable $exception) {
-                App::error(ExceptionHelper::dumpExceptionToString($exception));
                 if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt)) {
                     throw $exception;
                 }
