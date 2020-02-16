@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 
 namespace rabbit\db\click;
 
@@ -9,22 +9,10 @@ use rabbit\db\ConnectionInterface;
  * Class BatchInsert
  * @package rabbit\db
  */
-class BatchInsert
+class BatchInsert extends \rabbit\db\BatchInsert
 {
-    /** @var string */
-    protected $table;
-    /** @var array */
-    protected $columns = [];
-    /** @var ConnectionInterface */
-    protected $db;
     /** @var array */
     private $rows = [];
-
-    public function __construct(string $table, ConnectionInterface $db)
-    {
-        $this->table = $table;
-        $this->db = $db;
-    }
 
     /**
      * @return int
@@ -52,12 +40,16 @@ class BatchInsert
      * @param bool $checkFields
      * @return bool
      */
-    public function addRow(array $rows, bool $checkFields = true): bool
+    public function addRow(array $rows, bool $isIndex = false): bool
     {
         if (empty($rows)) {
             return false;
         }
-        $this->rows = array_merge($this->rows, $rows);
+        if ($isIndex) {
+            $this->rows = array_merge($this->rows, $rows);
+        } else {
+            $this->rows[] = $rows;
+        }
         return true;
     }
 
