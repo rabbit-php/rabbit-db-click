@@ -59,7 +59,7 @@ class BatchInsert extends \rabbit\db\BatchInsert
     public function execute(): int
     {
         if ($this->rows) {
-            return $this->db->insert($this->table, $this->columns, $this->rows);
+            return (int)$this->db->insert($this->table, $this->columns, $this->rows);
         }
         return 0;
     }
