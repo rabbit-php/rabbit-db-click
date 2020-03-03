@@ -60,11 +60,13 @@ class Command extends BaseCommand
             if (strlen($rawSql) < $this->db->maxLog) {
                 $this->logQuery($rawSql, 'clickhouse');
             }
-            return $this->db->execute($rawSql);
+            $res = $this->db->execute($rawSql);
+        } else {
+            $this->logQuery("Inserted with SeasClick", 'clickhouse');
+            $res = $this->executed;
+            $this->executed = null;
         }
-        $this->logQuery("Inserted with SeasClick", 'clickhouse');
-        $res = $this->executed;
-        $this->executed = null;
+        $this->db->release();
         return $res;
     }
 
@@ -166,6 +168,7 @@ class Command extends BaseCommand
 
         try {
             $data = $this->db->select($rawSql);
+            $this->db->release();
             $result = $this->prepareResult($data, $method);
         } catch (Exception $e) {
             throw new DbException("Query error: " . $e->getMessage());
