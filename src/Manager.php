@@ -56,6 +56,7 @@ class Manager
             if (!isset($this->connections[$name])) {
                 /** @var ClickPool $pool */
                 $pool = ArrayHelper::remove($config, 'pool');
+                $config['poolName'] = $name;
                 $pool->getPoolConfig()->setConfig($config);
                 $this->connections[$name] = $pool;
             }

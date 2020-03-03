@@ -196,7 +196,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
      * @param bool $release
      * @param string $name
      */
-    public function release($release = false, string $name = 'db'): void
+    public function release($release = false): void
     {
         $transaction = $this->getTransaction();
         if (!empty($transaction) && $transaction->getIsActive()) {//事务里面不释放连接
@@ -204,7 +204,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
         }
         if ($this->isAutoRelease() || $release) {
             PoolManager::getPool($this->poolKey)->release($this);
-            ClickContext::delete($name);
+            ClickContext::delete($this->poolName);
         }
     }
 
