@@ -4,6 +4,7 @@
 namespace rabbit\db\click;
 
 use rabbit\core\Context;
+use rabbit\db\ConnectionInterface;
 
 /**
  * Class ClickContext
@@ -75,12 +76,9 @@ class ClickContext extends Context
     {
         $context = \Co::getContext();
         if (isset($context['clickhouse'])) {
-            /**
-             * @var  $name
-             * @var \rabbit\db\mysql\Connection $connection
-             */
-            foreach ($context['clickhouse'] as $name => $connection) {
-                $connection->release(true, $name);
+            /** @var ConnectionInterface $connection */
+            foreach ($context['clickhouse'] as $connection) {
+                $connection->release(true);
             }
         }
     }

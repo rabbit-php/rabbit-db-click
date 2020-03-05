@@ -66,7 +66,7 @@ class Command extends BaseCommand
             $res = $this->executed;
             $this->executed = null;
         }
-        $this->db->release();
+        $this->db->release(true);
         return $res;
     }
 
@@ -168,7 +168,7 @@ class Command extends BaseCommand
 
         try {
             $data = $this->db->select($rawSql);
-            $this->db->release();
+            $this->db->release(true);
             $result = $this->prepareResult($data, $method);
         } catch (Exception $e) {
             throw new DbException("Query error: " . $e->getMessage());
