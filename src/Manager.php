@@ -29,8 +29,6 @@ class Manager
     private $connections = [];
     /** @var array */
     private $deferList = [];
-    /** @var array */
-    private $yamlList = [];
     /** @var int */
     private $min = 5;
     /** @var int */
@@ -73,13 +71,6 @@ class Manager
     public function getConnection(string $name = 'db'): ?Connection
     {
         if (($connection = ClickContext::get($name)) === null) {
-            /** @var ClickPool $pool */
-            if (!isset($this->connections[$name])) {
-                if (empty($this->yamlList)) {
-                    return null;
-                }
-                $this->createByYaml();
-            }
             $pool = $this->connections[$name];
             $connection = $pool->getConnection();
             ClickContext::set($name, $connection);
@@ -109,48 +100,5 @@ class Manager
     public function release(): void
     {
         ClickContext::release();
-    }
-
-    /**
-     * @throws Exception
-     * @throws DependencyException
-     * @throws NotFoundException
-     */
-    private function createByYaml(): void
-    {
-        foreach ($this->yamlList as $fileName) {
-            foreach (yaml_parse_file($fileName) as $name => $dbconfig) {
-                if (!isset($this->connections[$name])) {
-                    if (!isset($dbconfig['class']) || !isset($dbconfig['dsn']) ||
-                        !class_exists($dbconfig['class']) || !$dbconfig['class'] instanceof ConnectionInterface) {
-                        throw new Exception("The Clickhouse class and dsn must be set current class in $fileName");
-                    }
-                    [$min, $max, $wait] = ArrayHelper::getValueByArray(
-                        ArrayHelper::getValue($dbconfig, 'pool', []),
-                        ['min', 'max', 'wait'],
-                        null,
-                        [
-                            $this->min,
-                            $this->max,
-                            $this->wait
-                        ]
-                    );
-                    ArrayHelper::removeKeys($dbconfig, ['class', 'dsn', 'pool']);
-                    $this->connections[$name] = ObjectFactory::createObject([
-                        'class' => $dbconfig['class'],
-                        'dsn' => $dbconfig['dsn'],
-                        'pool' => ObjectFactory::createObject([
-                            'class' => PdoPool::class,
-                            'poolConfig' => ObjectFactory::createObject([
-                                'class' => PdoPoolConfig::class,
-                                'minActive' => intval($min / swoole_cpu_num()),
-                                'maxActive' => intval($max / swoole_cpu_num()),
-                                'maxWait' => $wait
-                            ], [], false)
-                        ], $dbconfig, false)
-                    ]);
-                }
-            }
-        }
     }
 }
