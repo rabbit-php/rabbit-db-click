@@ -56,6 +56,7 @@ class Manager
                 $pool = ArrayHelper::remove($config, 'pool');
                 $config['poolName'] = $name;
                 $pool->getPoolConfig()->setConfig($config);
+                $pool->getPoolConfig()->setUri($config['dsn']);
                 $this->connections[$name] = $pool;
             }
         }
