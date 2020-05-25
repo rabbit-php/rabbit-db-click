@@ -14,7 +14,6 @@ use rabbit\db\QueryBuilder;
 use rabbit\exception\InvalidArgumentException;
 use rabbit\exception\NotSupportedException;
 use rabbit\helper\ArrayHelper;
-use rabbit\helper\ExceptionHelper;
 use rabbit\pool\ConnectionInterface;
 use rabbit\pool\PoolManager;
 
