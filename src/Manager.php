@@ -14,6 +14,7 @@ use rabbit\core\ObjectFactory;
 use rabbit\db\click\pool\ClickPool;
 use rabbit\db\click\pool\ClickPoolConfig;
 use rabbit\db\ConnectionInterface;
+use rabbit\db\DbContext;
 use rabbit\db\Exception;
 use rabbit\db\pool\PdoPool;
 use rabbit\db\pool\PdoPoolConfig;
@@ -69,10 +70,10 @@ class Manager
      */
     public function getConnection(string $name = 'db'): ?Connection
     {
-        if (($connection = ClickContext::get($name)) === null) {
+        if (($connection = DbContext::get($name,'database.click')) === null) {
             $pool = $this->connections[$name];
             $connection = $pool->getConnection();
-            ClickContext::set($name, $connection);
+            DbContext::set($name, $connection,'database.click');
         }
         return $connection;
     }

@@ -11,12 +11,6 @@ use rabbit\db\ConnectionInterface;
  */
 class ActiveRecord extends \rabbit\db\clickhouse\ActiveRecord
 {
-
-    public function __destruct()
-    {
-        ClickContext::release();
-    }
-
     /**
      * Returns the connection used by this AR class.
      * @return mixed|Connection the database connection used by this AR class.

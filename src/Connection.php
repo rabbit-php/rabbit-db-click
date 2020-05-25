@@ -8,6 +8,7 @@ use rabbit\App;
 use rabbit\contract\InitInterface;
 use rabbit\core\ObjectFactory;
 use rabbit\db\ConnectionTrait;
+use rabbit\db\DbContext;
 use rabbit\db\Exception;
 use rabbit\db\QueryBuilder;
 use rabbit\exception\InvalidArgumentException;
@@ -203,7 +204,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
         }
         if ($this->isAutoRelease() || $release) {
             PoolManager::getPool($this->poolKey)->release($this);
-            ClickContext::delete($this->poolName);
+            DbContext::delete($this->poolName,'database.click');
         }
     }
 
