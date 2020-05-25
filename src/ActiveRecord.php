@@ -3,8 +3,6 @@
 namespace rabbit\db\click;
 
 use Exception;
-use rabbit\App;
-use rabbit\core\ObjectFactory;
 use rabbit\db\ConnectionInterface;
 
 /**
@@ -14,6 +12,10 @@ use rabbit\db\ConnectionInterface;
 class ActiveRecord extends \rabbit\db\clickhouse\ActiveRecord
 {
 
+    public function __destruct()
+    {
+        ClickContext::release();
+    }
 
     /**
      * Returns the connection used by this AR class.
