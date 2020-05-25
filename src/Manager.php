@@ -27,8 +27,6 @@ class Manager
 {
     /** @var ClickPool[] */
     private $connections = [];
-    /** @var array */
-    private $deferList = [];
     /** @var int */
     private $min = 5;
     /** @var int */
@@ -75,13 +73,6 @@ class Manager
             $pool = $this->connections[$name];
             $connection = $pool->getConnection();
             ClickContext::set($name, $connection);
-            if (($cid = \Co::getCid()) !== -1 && !in_array($cid, $this->deferList)) {
-                defer(function () use ($cid) {
-                    ClickContext::release();
-                    $this->deferList = array_values(array_diff($this->deferList, [$cid]));
-                });
-                $this->deferList[] = $cid;
-            }
         }
         return $connection;
     }
