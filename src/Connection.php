@@ -5,26 +5,20 @@ namespace rabbit\db\click;
 use DI\DependencyException;
 use DI\NotFoundException;
 use rabbit\App;
-use rabbit\contract\InitInterface;
 use rabbit\core\ObjectFactory;
-use rabbit\db\ConnectionTrait;
 use rabbit\db\DbContext;
 use rabbit\db\Exception;
 use rabbit\db\QueryBuilder;
-use rabbit\exception\InvalidArgumentException;
 use rabbit\exception\NotSupportedException;
 use rabbit\helper\ArrayHelper;
 use rabbit\pool\ConnectionInterface;
-use rabbit\pool\PoolManager;
 
 /**
  * Class Connection
  * @package rabbit\db\click
  */
-class Connection extends \rabbit\db\Connection implements ConnectionInterface, InitInterface
+class Connection extends \rabbit\db\Connection implements ConnectionInterface
 {
-    use ConnectionTrait;
-
     public $schemaMap = [
         'clickhouse' => Schema::class
     ];
@@ -42,22 +36,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
     public function __construct(string $dsn, string $poolKey)
     {
         parent::__construct($dsn);
-        $this->lastTime = time();
-        $this->connectionId = uniqid();
-        $this->poolKey = $poolKey;
-    }
-
-    public function init()
-    {
-        $this->createConnection();
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function createConnection(): void
-    {
-        $this->open();
+        $this->driver = 'click';
     }
 
     /**
@@ -99,28 +78,9 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
     }
 
     /**
-     * @param int $attempt
-     * @throws Exception
-     */
-    public function open(int $attempt = 0)
-    {
-        if ($this->getIsActive()) {
-            return;
-        }
-
-        if (empty($this->dsn)) {
-            throw new InvalidArgumentException('Connection::dsn cannot be empty.');
-        }
-
-        $token = 'Opening Clickhouse connection: ' . $this->shortDsn;
-        App::info($token, "Clickhouse");
-        $this->pdo = $this->createPdoInstance();
-    }
-
-    /**
      * @return \PDO|\SeasClick
      */
-    protected function createPdoInstance()
+    public function createPdoInstance()
     {
         $parsed = parse_url($this->dsn);
         isset($parsed['query']) ? parse_str($parsed['query'], $parsed['query']) : $parsed['query'] = [];
@@ -150,9 +110,11 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
     public function __call($name, $arguments)
     {
         $attempt = 0;
+        $this->open();
         while (true) {
             try {
-                return $this->pdo->$name(...$arguments);
+                $conn = DbContext::get($this->poolName, $this->driver);
+                return $conn->$name(...$arguments);
             } catch (\Throwable $exception) {
                 if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt++)) {
                     throw $exception;
@@ -168,7 +130,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
      */
     public function reconnect(int $attempt = 0): void
     {
-        $this->pdo = null;
+        DbContext::delete($this->poolName, $this->driver);
         App::warning('Reconnect DB connection: ' . $this->shortDsn, 'db');
         $this->open($attempt);
     }
@@ -189,22 +151,6 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
     public function receive(float $timeout = -1)
     {
         throw new NotSupportedException('can not call ' . __METHOD__);
-    }
-
-    /**
-     * @param bool $release
-     * @param string $name
-     */
-    public function release($release = false): void
-    {
-        $transaction = $this->getTransaction();
-        if (!empty($transaction) && $transaction->getIsActive()) {//事务里面不释放连接
-            return;
-        }
-        if ($this->isAutoRelease() || $release) {
-            PoolManager::getPool($this->poolKey)->release($this);
-            DbContext::delete($this->poolName,'database.click');
-        }
     }
 
     /**
@@ -243,5 +189,13 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface, I
     public function getQueryBuilder()
     {
         return $this->getSchema()->getQueryBuilder();
+    }
+
+    /**
+     * @param $conn
+     */
+    protected function setInsertId($conn): void
+    {
+
     }
 }
