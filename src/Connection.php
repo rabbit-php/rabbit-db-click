@@ -36,6 +36,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
     public function __construct(string $dsn, string $poolKey)
     {
         parent::__construct($dsn);
+        $this->poolKey = $poolKey;
         $this->driver = 'click';
     }
 
