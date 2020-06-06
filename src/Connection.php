@@ -126,17 +126,6 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
     }
 
     /**
-     * @param int $attempt
-     * @throws Exception
-     */
-    public function reconnect(int $attempt = 0): void
-    {
-        DbContext::delete($this->poolName, $this->driver);
-        App::warning('Reconnect DB connection: ' . $this->shortDsn, 'db');
-        $this->open($attempt);
-    }
-
-    /**
      * @return bool
      */
     public function check(): bool
