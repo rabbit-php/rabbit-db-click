@@ -98,7 +98,7 @@ class Command extends BaseCommand
     public function getRawSql()
     {
         if (empty($this->params)) {
-            return $this->getSql();
+            return $this->_sql;
         }
         $params = [];
         foreach ($this->params as $name => $value) {
@@ -116,10 +116,10 @@ class Command extends BaseCommand
             }
         }
         if (!isset($params[0])) {
-            return strtr($this->getSql(), $params);
+            return strtr($this->_sql, $params);
         }
         $sql = '';
-        foreach (explode('?', $this->getSql()) as $i => $part) {
+        foreach (explode('?', $this->_sql) as $i => $part) {
             $sql .= $part . (isset($params[$i]) ? $params[$i] : '');
         }
         return $sql;

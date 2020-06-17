@@ -83,7 +83,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
      */
     public function createPdoInstance()
     {
-        $parsed = parse_url($this->dsn);
+        $parsed = $this->parseDsn;
         isset($parsed['query']) ? parse_str($parsed['query'], $parsed['query']) : $parsed['query'] = [];
         [$_, $host, $port, $this->username, $this->password, $query] = ArrayHelper::getValueByArray(
             $parsed,
@@ -123,24 +123,6 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
                 $this->reconnect($attempt);
             }
         }
-    }
-
-    /**
-     * @return bool
-     */
-    public function check(): bool
-    {
-        return $this->getIsActive();
-    }
-
-    /**
-     * @param float $timeout
-     * @return mixed|void
-     * @throws NotSupportedException
-     */
-    public function receive(float $timeout = -1)
-    {
-        throw new NotSupportedException('can not call ' . __METHOD__);
     }
 
     /**
