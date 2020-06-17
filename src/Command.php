@@ -57,9 +57,7 @@ class Command extends BaseCommand
         if ($this->executed === null) {
             $rawSql = $this->getRawSql();
 
-            if (strlen($rawSql) < $this->db->maxLog) {
-                $this->logQuery($rawSql, 'clickhouse');
-            }
+            $this->logQuery($rawSql, 'clickhouse');
             $res = $this->db->execute($rawSql);
         } else {
             $this->logQuery("Inserted with SeasClick", 'clickhouse');
