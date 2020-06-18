@@ -31,7 +31,7 @@ class Query extends BaseQuery
     public function createCommand($db = null)
     {
         if ($db === null) {
-            $db = getDI('click')->getConnection();
+            $db = getDI('click')->get();
         }
         [$sql, $params] = $db->getQueryBuilder()->build($this);
 

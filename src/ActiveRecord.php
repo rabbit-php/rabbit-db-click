@@ -18,6 +18,6 @@ class ActiveRecord extends \rabbit\db\clickhouse\ActiveRecord
      */
     public static function getDb(): ConnectionInterface
     {
-        return getDI('click')->getConnection();
+        return getDI('click')->get();
     }
 }
