@@ -1,18 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace rabbit\db\click;
+namespace Rabbit\DB\Click;
 
-use rabbit\db\ConnectionInterface;
 
-/**'
+/**
  * Class BatchInsert
- * @package rabbit\db
+ * @package Rabbit\DB\Click
  */
-class BatchInsert extends \rabbit\db\BatchInsert
+class BatchInsert extends \Rabbit\DB\BatchInsert
 {
     /** @var array */
-    private $rows = [];
+    private array $rows = [];
 
     /**
      * @return int
@@ -37,7 +36,7 @@ class BatchInsert extends \rabbit\db\BatchInsert
 
     /**
      * @param array $rows
-     * @param bool $checkFields
+     * @param bool $isIndex
      * @return bool
      */
     public function addRow(array $rows, bool $isIndex = false): bool

@@ -1,20 +1,20 @@
 <?php
+declare(strict_types=1);
 
-namespace rabbit\db\click;
+namespace Rabbit\DB\Click;
 
 use Exception;
+use Generator;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
-use rabbit\App;
-use rabbit\db\Command as BaseCommand;
-use rabbit\db\Exception as DbException;
+use Rabbit\DB\DataReader;
+use Throwable;
 
 /**
  * Class Command
- * @package rabbit\db\click
- * @property $db \rabbit\db\click\Connection
+ * @package Rabbit\DB\Click
  */
-class Command extends BaseCommand
+class Command extends \Rabbit\DB\Command
 {
     const FETCH = 'fetch';
     const FETCH_ALL = 'fetchAll';
@@ -22,15 +22,15 @@ class Command extends BaseCommand
     const FETCH_SCALAR = 'fetchScalar';
 
     /** @var int fetch type result */
-    public $fetchMode = 0;
+    public int $fetchMode = 0;
     /** @var int */
-    private $executed = null;
+    private ?int $executed = null;
 
     /**
      * @param array $values
-     * @return $this|BaseCommand
+     * @return $this
      */
-    public function bindValues($values)
+    public function bindValues(array $values): self
     {
         if (empty($values)) {
             return $this;
@@ -52,7 +52,7 @@ class Command extends BaseCommand
      * @return int
      * @throws Exception
      */
-    public function execute()
+    public function execute(): int
     {
         if ($this->executed === null) {
             $rawSql = $this->getRawSql();
@@ -64,26 +64,24 @@ class Command extends BaseCommand
             $res = $this->executed;
             $this->executed = null;
         }
-        return $res;
+        return (int)$res;
     }
 
 
     /**
-     * @return array|mixed|null
-     * @throws DbException
+     * @return array|null
      * @throws InvalidArgumentException
      */
-    public function queryColumn()
+    public function queryColumn(): ?array
     {
         return $this->queryInternal(self::FETCH_COLUMN);
     }
 
     /**
-     * @return array|false|int|mixed|string|null
-     * @throws DbException
+     * @return string|null
      * @throws InvalidArgumentException
      */
-    public function queryScalar()
+    public function queryScalar(): ?string
     {
         $result = $this->queryInternal(self::FETCH_SCALAR, 0);
         if (is_array($result)) {
@@ -93,7 +91,10 @@ class Command extends BaseCommand
         }
     }
 
-    public function getRawSql()
+    /**
+     * @return string
+     */
+    public function getRawSql(): string
     {
         if (empty($this->params)) {
             return $this->_sql;
@@ -125,13 +126,12 @@ class Command extends BaseCommand
 
     /**
      * @param string $method
-     * @param null $fetchMode
+     * @param int $fetchMode
      * @return array|mixed|null
-     * @throws DbException
      * @throws InvalidArgumentException
-     * @throws Exception
+     * @throws Throwable
      */
-    protected function queryInternal($method, $fetchMode = null)
+    protected function queryInternal(string $method, int $fetchMode = null)
     {
         $rawSql = $this->getRawSql();
         if ($method === self::FETCH) {
@@ -168,7 +168,7 @@ class Command extends BaseCommand
             $data = $this->db->select($rawSql);
             $result = $this->prepareResult($data, $method);
         } catch (Exception $e) {
-            throw new DbException("Query error: " . $e->getMessage());
+            throw new Exception("Query error: " . $e->getMessage());
         }
 
         if (isset($cache, $cacheKey, $info)) {
@@ -182,11 +182,11 @@ class Command extends BaseCommand
     }
 
     /**
-     * @param $result
-     * @param null $method
-     * @return array|mixed|null
+     * @param array $result
+     * @param string|null $method
+     * @return array|mixed
      */
-    private function prepareResult($result, $method = null)
+    private function prepareResult(array $result, string $method = null)
     {
         switch ($method) {
             case self::FETCH_COLUMN:
@@ -208,54 +208,34 @@ class Command extends BaseCommand
     }
 
     /**
-     * Creates an INSERT command.
-     * For example,
-     *
-     * ```php
-     * $connection->createCommand()->insert('user', [
-     *     'name' => 'Sam',
-     *     'age' => 30,
-     * ])->execute();
-     * ```
-     *
-     * The method will properly escape the column names, and bind the values to be inserted.
-     *
-     * Note that the created command is not executed until [[execute()]] is called.
-     *
-     * @param string $table the table that new rows will be inserted into.
-     * @param array $columns the column data (name => value) to be inserted into the table.
-     * @return $this the command object itself
+     * @param string $table
+     * @param array|\Rabbit\DB\Query $columns
+     * @return $this
      */
-    public function insert($table, $columns)
+    public function insert(string $table, $columns): self
     {
         $this->executed = $this->db->insert($table, array_keys($columns), array_values($columns));
         return $this;
     }
 
     /**
-     * Creates a batch INSERT command.
-     * For example,
-     *
-     * ```php
-     * $connection->createCommand()->batchInsert('user', ['name', 'age'], [
-     *     ['Tom', 30],
-     *     ['Jane', 20],
-     *     ['Linda', 25],
-     * ])->execute();
-     * ```
-     * @param $table
-     * @param $columns
-     * @param $rows
-     * @return Command
+     * @param string $table
+     * @param array $columns
+     * @param array|Generator $rows
+     * @return $this
      */
-    public function batchInsert($table, $columns, $rows)
+    public function batchInsert(string $table, array $columns, $rows): self
     {
         $this->executed = $this->db->insert($table, $columns, $rows);
         return $this;
     }
 
-    public function query()
+    /**
+     * @return DataReader
+     * @throws Exception
+     */
+    public function query(): DataReader
     {
-        throw new DbException('Clichouse unsupport cursor');
+        throw new Exception('Clichouse unsupport cursor');
     }
 }

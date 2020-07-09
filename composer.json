@@ -10,13 +10,25 @@
     }
   ],
   "require": {
-    "rabbit/framework": "^1.0",
-    "rabbit/db": "^1.0",
-    "rabbit/db-clickhouse": "^1.0"
+    "php": ">=7.4.0",
+    "ext-swoole": ">=4.5.0",
+    "ext-seasclick": "*",
+    "rabbit/base": "dev-master",
+    "rabbit/cache": "dev-master",
+    "rabbit/parser": "dev-master",
+    "rabbit/pool": "dev-master",
+    "rabbit/active-record": "dev-master",
+    "rabbit/db": "dev-master",
+    "rabbit/httpclient": "dev-master",
+    "rabbit/db-clickhouse": "dev-master"
+  },
+  "require-dev": {
+    "swoole/ide-helper": "@dev",
+    "phpunit/phpunit": "*"
   },
   "autoload": {
     "psr-4": {
-      "rabbit\\db\\click\\": "src/"
+      "Rabbit\\DB\\Click\\": "src/"
     }
   }
 }

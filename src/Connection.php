@@ -1,37 +1,37 @@
 <?php
+declare(strict_types=1);
 
-namespace rabbit\db\click;
+namespace Rabbit\DB\Click;
 
 use DI\DependencyException;
 use DI\NotFoundException;
-use rabbit\App;
-use rabbit\core\ObjectFactory;
-use rabbit\db\DbContext;
-use rabbit\db\Exception;
-use rabbit\db\QueryBuilder;
-use rabbit\exception\NotSupportedException;
-use rabbit\helper\ArrayHelper;
-use rabbit\pool\ConnectionInterface;
+use Psr\SimpleCache\InvalidArgumentException;
+use Rabbit\Base\App;
+use Rabbit\Base\Exception\NotSupportedException;
+use Rabbit\Base\Helper\ArrayHelper;
+use Rabbit\DB\ClickHouse\Schema;
+use Rabbit\DB\Exception;
+use Throwable;
 
 /**
  * Class Connection
- * @package rabbit\db\click
+ * @package Rabbit\DB\Click
  */
-class Connection extends \rabbit\db\Connection implements ConnectionInterface
+class Connection extends \Rabbit\DB\Connection
 {
-    public $schemaMap = [
+    /** @var array|string[] */
+    public array $schemaMap = [
         'clickhouse' => Schema::class
     ];
     /** @var string */
-    public $database = 'default';
-
-    protected $commandClass = Command::class;
+    public string $database = 'default';
+    /** @var string */
+    protected string $commandClass = Command::class;
 
     /**
      * Connection constructor.
      * @param string $dsn
      * @param string $poolKey
-     * @throws Exception
      */
     public function __construct(string $dsn, string $poolKey)
     {
@@ -41,17 +41,23 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
     }
 
     /**
-     * @param string $str
+     * @param string $value
      * @return string
      * @throws DependencyException
      * @throws NotFoundException
+     * @throws InvalidArgumentException
+     * @throws Throwable
      */
-    public function quoteValue($str)
+    public function quoteValue(string $value): string
     {
-        return $this->getSchema()->quoteValue($str);
+        return $this->getSchema()->quoteValue($value);
     }
 
-    public function quoteSql($sql)
+    /**
+     * @param string $sql
+     * @return string
+     */
+    public function quoteSql(string $sql): string
     {
         return $sql;
     }
@@ -59,7 +65,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
 
     /**
      * @return array
-     * @throws Exception
+     * @throws Throwable
      */
     public function __sleep()
     {
@@ -69,9 +75,9 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
 
 
     /**
-     * @throws Exception
+     * @throws Throwable
      */
-    public function close()
+    public function close(): void
     {
         if ($this->getIsActive()) {
             App::warning('Closing DB connection: ' . $this->shortDsn, 'clickhouse');
@@ -79,7 +85,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
     }
 
     /**
-     * @return \PDO|\SeasClick
+     * @return \SeasClick
      */
     public function createPdoInstance()
     {
@@ -88,10 +94,9 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
         [$_, $host, $port, $this->username, $this->password, $query] = ArrayHelper::getValueByArray(
             $parsed,
             ['scheme', 'host', 'port', 'user', 'pass', 'query'],
-            null,
             ['clickhouse', 'localhost', '9000', '', '', []]
         );
-        $this->database = ArrayHelper::remove($query, 'dbname');
+        $this->database = (string)ArrayHelper::remove($query, 'dbname');
         $compression = ArrayHelper::remove($query, 'compression');
         $client = new \SeasClick([
             "host" => $host,
@@ -107,6 +112,9 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
     /**
      * @param $name
      * @param $arguments
+     * @return mixed
+     * @throws InvalidArgumentException
+     * @throws Throwable
      */
     public function __call($name, $arguments)
     {
@@ -116,7 +124,7 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
             try {
                 $conn = DbContext::get($this->poolName, $this->driver);
                 return $conn->$name(...$arguments);
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt++)) {
                     throw $exception;
                 }
@@ -130,44 +138,30 @@ class Connection extends \rabbit\db\Connection implements ConnectionInterface
      * @throws DependencyException
      * @throws NotFoundException
      */
-    public function getSchema()
+    public function getSchema(): \Rabbit\DB\Schema
     {
-        return $this->_schema = ObjectFactory::createObject([
+        return $this->_schema = create([
             'class' => Schema::class,
             'db' => $this
         ]);
     }
 
-    public function quoteTableName($name)
+    public function quoteTableName(string $name): string
     {
         return $name;
     }
 
-    public function getDriverName()
-    {
-        return 'clickhouse';
-    }
-
-    public function quoteColumnName($name)
+    public function quoteColumnName(string $name): string
     {
         return $name;
     }
 
     /**
-     * @return QueryBuilder
-     * @throws DependencyException
-     * @throws NotFoundException
-     */
-    public function getQueryBuilder()
-    {
-        return $this->getSchema()->getQueryBuilder();
-    }
-
-    /**
-     * @param $conn
+     * @param null $conn
+     * @throws NotSupportedException
      */
     protected function setInsertId($conn): void
     {
-
+        throw new NotSupportedException("Click has no auto increment ID");
     }
 }

@@ -1,20 +1,21 @@
 <?php
+declare(strict_types=1);
 
-namespace rabbit\db\click;
+namespace Rabbit\DB\Click;
 
-use Exception;
-use rabbit\db\ConnectionInterface;
+use Rabbit\Pool\ConnectionInterface;
+use Throwable;
 
 /**
  * Class ActiveRecord
- * @package rabbit\db\click
+ * @package Rabbit\DB\Click
  */
-class ActiveRecord extends \rabbit\db\clickhouse\ActiveRecord
+class ActiveRecord extends \Rabbit\DB\ClickHouse\ActiveRecord
 {
     /**
      * Returns the connection used by this AR class.
      * @return mixed|Connection the database connection used by this AR class.
-     * @throws Exception
+     * @throws Throwable
      */
     public static function getDb(): ConnectionInterface
     {
