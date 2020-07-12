@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 namespace Rabbit\DB\Click;
 
 use DI\DependencyException;
@@ -23,19 +24,19 @@ class Query extends \Rabbit\DB\Query
     public $preWhere = null;
     public $limitBy = null;
 
-    /**
-     * @param ConnectionInterface|null $db
-     * @return Command
-     * @throws Throwable
-     */
-    public function createCommand(ConnectionInterface $db = null): Command
+    public function __construct(?\Rabbit\Pool\ConnectionInterface $db = null, array $config = [])
     {
-        if ($db === null) {
-            $db = getDI('click')->get();
-        }
-        [$sql, $params] = $db->getQueryBuilder()->build($this);
+        parent::__construct($db ?? getDI('click')->get(), $config);
+    }
 
-        $command = $db->createCommand($sql, $params);
+    /**
+     * @return Command
+     */
+    public function createCommand(): Command
+    {
+        [$sql, $params] = $this->db->getQueryBuilder()->build($this);
+
+        $command = $this->db->createCommand($sql, $params);
         $this->setCommandCache($command);
 
         return $command;
@@ -43,36 +44,36 @@ class Query extends \Rabbit\DB\Query
 
     /**
      * @param int $batchSize
-     * @param ConnectionInterface|null $db
      * @return BatchQueryResult
      * @throws DependencyException
      * @throws NotFoundException
+     * @throws \ReflectionException
      */
-    public function batch(int $batchSize = 100, ConnectionInterface $db = null): BatchQueryResult
+    public function batch(int $batchSize = 100): BatchQueryResult
     {
         return create([
             'class' => BatchQueryResult::class,
             'query' => $this,
             'batchSize' => $batchSize,
-            'db' => $db,
+            'db' => $this->db,
             'each' => false,
         ], [], false);
     }
 
     /**
      * @param int $batchSize
-     * @param ConnectionInterface|null $db
      * @return BatchQueryResult
      * @throws DependencyException
      * @throws NotFoundException
+     * @throws \ReflectionException
      */
-    public function each(int $batchSize = 100, ConnectionInterface $db = null): BatchQueryResult
+    public function each(int $batchSize = 100): BatchQueryResult
     {
         return create([
             'class' => BatchQueryResult::class,
             'query' => $this,
             'batchSize' => $batchSize,
-            'db' => $db,
+            'db' => $this->db,
             'each' => true,
         ], [], false);
     }
