@@ -10,6 +10,7 @@ use Rabbit\Base\App;
 use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\DB\ClickHouse\Schema;
+use Rabbit\DB\DbContext;
 use Rabbit\DB\Exception;
 use Throwable;
 
@@ -158,10 +159,9 @@ class Connection extends \Rabbit\DB\Connection
 
     /**
      * @param null $conn
-     * @throws NotSupportedException
      */
-    protected function setInsertId($conn): void
+    public function setInsertId($conn = null): void
     {
-        throw new NotSupportedException("Click has no auto increment ID");
+        return;
     }
 }
