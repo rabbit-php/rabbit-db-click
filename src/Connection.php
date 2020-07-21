@@ -7,11 +7,8 @@ use DI\DependencyException;
 use DI\NotFoundException;
 use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\Base\App;
-use Rabbit\Base\Exception\NotSupportedException;
 use Rabbit\Base\Helper\ArrayHelper;
-use Rabbit\DB\ClickHouse\Schema;
 use Rabbit\DB\DbContext;
-use Rabbit\DB\Exception;
 use Throwable;
 
 /**
@@ -22,12 +19,18 @@ class Connection extends \Rabbit\DB\Connection
 {
     /** @var array|string[] */
     public array $schemaMap = [
-        'clickhouse' => Schema::class
+        'click' => Schema::class
     ];
     /** @var string */
     public string $database = 'default';
     /** @var string */
     protected string $commandClass = Command::class;
+    /** @var bool */
+    protected bool $compression;
+    /** @var string */
+    protected string $host;
+    /** @var int */
+    protected int $port;
 
     /**
      * Connection constructor.
@@ -39,6 +42,15 @@ class Connection extends \Rabbit\DB\Connection
         parent::__construct($dsn);
         $this->poolKey = $poolKey;
         $this->driver = 'click';
+        $parsed = $this->parseDsn;
+        isset($parsed['query']) ? parse_str($parsed['query'], $parsed['query']) : $parsed['query'] = [];
+        [$this->host, $this->port, $this->username, $this->password, $query] = ArrayHelper::getValueByArray(
+            $parsed,
+            ['host', 'port', 'user', 'pass', 'query'],
+            ['127.0.0.1', 9000, '', '', []]
+        );
+        $this->database = (string)ArrayHelper::remove($query, 'dbname');
+        $this->compression = (bool)ArrayHelper::remove($query, 'compression', true);
     }
 
     /**
@@ -90,19 +102,10 @@ class Connection extends \Rabbit\DB\Connection
      */
     public function createPdoInstance()
     {
-        $parsed = $this->parseDsn;
-        isset($parsed['query']) ? parse_str($parsed['query'], $parsed['query']) : $parsed['query'] = [];
-        [$_, $host, $port, $this->username, $this->password, $query] = ArrayHelper::getValueByArray(
-            $parsed,
-            ['scheme', 'host', 'port', 'user', 'pass', 'query'],
-            ['clickhouse', 'localhost', '9000', '', '', []]
-        );
-        $this->database = (string)ArrayHelper::remove($query, 'dbname');
-        $compression = ArrayHelper::remove($query, 'compression');
         $client = new \SeasClick([
-            "host" => $host,
-            "port" => $port,
-            "compression" => $compression,
+            "host" => $this->host,
+            "port" => $this->port,
+            "compression" => $this->compression,
             "database" => $this->database,
             "user" => $this->username,
             "passwd" => $this->password
@@ -127,6 +130,7 @@ class Connection extends \Rabbit\DB\Connection
                 return $conn->$name(...$arguments);
             } catch (Throwable $exception) {
                 if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt++)) {
+                    App::error($exception->getMessage());
                     throw $exception;
                 }
                 $this->reconnect($attempt);
