@@ -87,7 +87,7 @@ class Command extends \Rabbit\DB\Command
         if (is_array($result)) {
             return current($result);
         } else {
-            return $result;
+            return $result === null ? null : (string)$result;
         }
     }
 
