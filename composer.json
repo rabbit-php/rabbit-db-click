@@ -26,6 +26,9 @@
     "swoole/ide-helper": "@dev",
     "phpunit/phpunit": "*"
   },
+  "suggest": {
+    "ext-seasclick": "Use https://github.com/amuluowin/SeasClick to support swoole"
+  },
   "autoload": {
     "psr-4": {
       "Rabbit\\DB\\Click\\": "src/"
