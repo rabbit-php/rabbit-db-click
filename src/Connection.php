@@ -9,6 +9,8 @@ use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\Base\App;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\DB\DbContext;
+use ReflectionException;
+use SeasClick;
 use Throwable;
 
 /**
@@ -17,19 +19,13 @@ use Throwable;
  */
 class Connection extends \Rabbit\DB\Connection
 {
-    /** @var array|string[] */
     public array $schemaMap = [
         'click' => Schema::class
     ];
-    /** @var string */
     public string $database = 'default';
-    /** @var string */
     protected string $commandClass = Command::class;
-    /** @var bool */
     protected bool $compression;
-    /** @var string */
     protected string $host;
-    /** @var int */
     protected int $port;
 
     /**
@@ -98,11 +94,11 @@ class Connection extends \Rabbit\DB\Connection
     }
 
     /**
-     * @return \SeasClick
+     * @return SeasClick
      */
     public function createPdoInstance()
     {
-        $client = new \SeasClick([
+        $client = new SeasClick([
             "host" => $this->host,
             "port" => $this->port,
             "compression" => $this->compression,
@@ -139,13 +135,14 @@ class Connection extends \Rabbit\DB\Connection
     }
 
     /**
-     * @return mixed|\rabbit\db\Schema
+     * @return \Rabbit\DB\Schema
      * @throws DependencyException
      * @throws NotFoundException
+     * @throws ReflectionException
      */
     public function getSchema(): \Rabbit\DB\Schema
     {
-        return $this->_schema = create([
+        return $this->schema = create([
             'class' => Schema::class,
             'db' => $this
         ]);
@@ -166,6 +163,5 @@ class Connection extends \Rabbit\DB\Connection
      */
     public function setInsertId($conn = null): void
     {
-        return;
     }
 }

@@ -8,6 +8,7 @@ use Generator;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\DB\DataReader;
+use Rabbit\DB\Query;
 use Throwable;
 
 /**
@@ -21,9 +22,7 @@ class Command extends \Rabbit\DB\Command
     const FETCH_COLUMN = 'fetchColumn';
     const FETCH_SCALAR = 'fetchScalar';
 
-    /** @var int fetch type result */
     public int $fetchMode = 0;
-    /** @var int */
     private ?int $executed = null;
 
     /**
@@ -38,7 +37,6 @@ class Command extends \Rabbit\DB\Command
         //$schema = $this->db->getSchema();
         foreach ($values as $name => $value) {
             if (is_array($value)) {
-                $this->_pendingParams[$name] = $value;
                 $this->params[$name] = $value[0];
             } else {
                 $this->params[$name] = $value;
@@ -50,7 +48,7 @@ class Command extends \Rabbit\DB\Command
 
     /**
      * @return int
-     * @throws Exception
+     * @throws Throwable
      */
     public function execute(): int
     {
@@ -71,6 +69,7 @@ class Command extends \Rabbit\DB\Command
     /**
      * @return array|null
      * @throws InvalidArgumentException
+     * @throws Throwable
      */
     public function queryColumn(): ?array
     {
@@ -80,6 +79,7 @@ class Command extends \Rabbit\DB\Command
     /**
      * @return string|null
      * @throws InvalidArgumentException
+     * @throws Throwable
      */
     public function queryScalar(): ?string
     {
@@ -97,7 +97,7 @@ class Command extends \Rabbit\DB\Command
     public function getRawSql(): string
     {
         if (empty($this->params)) {
-            return $this->_sql;
+            return $this->sql;
         }
         $params = [];
         foreach ($this->params as $name => $value) {
@@ -115,10 +115,10 @@ class Command extends \Rabbit\DB\Command
             }
         }
         if (!isset($params[0])) {
-            return strtr($this->_sql, $params);
+            return strtr($this->sql, $params);
         }
         $sql = '';
-        foreach (explode('?', $this->_sql) as $i => $part) {
+        foreach (explode('?', $this->sql) as $i => $part) {
             $sql .= $part . (isset($params[$i]) ? $params[$i] : '');
         }
         return $sql;
@@ -126,7 +126,7 @@ class Command extends \Rabbit\DB\Command
 
     /**
      * @param string $method
-     * @param int $fetchMode
+     * @param int|null $fetchMode
      * @return array|mixed|null
      * @throws InvalidArgumentException
      * @throws Throwable
@@ -193,7 +193,6 @@ class Command extends \Rabbit\DB\Command
                 return array_map(function ($a) {
                     return array_values($a)[0];
                 }, $result);
-                break;
             case self::FETCH_SCALAR:
                 if (array_key_exists(0, $result)) {
                     return current($result[0]);
@@ -201,7 +200,6 @@ class Command extends \Rabbit\DB\Command
                 break;
             case self::FETCH:
                 return is_array($result) ? array_shift($result) : $result;
-                break;
         }
 
         return $result;
@@ -209,7 +207,7 @@ class Command extends \Rabbit\DB\Command
 
     /**
      * @param string $table
-     * @param array|\Rabbit\DB\Query $columns
+     * @param array|Query $columns
      * @return $this
      */
     public function insert(string $table, $columns): self

@@ -8,6 +8,8 @@ use DI\DependencyException;
 use DI\NotFoundException;
 use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\DB\ClickHouse\TableSchema;
+use Rabbit\DB\ColumnSchema;
+use ReflectionException;
 use Throwable;
 
 /**
@@ -52,9 +54,9 @@ class Schema extends \Rabbit\DB\ClickHouse\Schema
      * @param array $info
      * @return ColumnSchema
      * @throws DependencyException
-     * @throws NotFoundException
+     * @throws NotFoundException|ReflectionException
      */
-    protected function loadColumnSchema(array $info): \Rabbit\DB\ColumnSchema
+    protected function loadColumnSchema(array $info): ColumnSchema
     {
         $column = $this->createColumnSchema();
         $column->name = $info['name'];
