@@ -142,6 +142,9 @@ class Connection extends \Rabbit\DB\Connection
      */
     public function getSchema(): \Rabbit\DB\Schema
     {
+        if ($this->schema !== null) {
+            return $this->schema;
+        }
         return $this->schema = create([
             'class' => Schema::class,
             'db' => $this
