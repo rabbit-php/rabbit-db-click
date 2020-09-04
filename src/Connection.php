@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rabbit\DB\Click;
@@ -8,6 +9,7 @@ use DI\NotFoundException;
 use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\Base\App;
 use Rabbit\Base\Helper\ArrayHelper;
+use Rabbit\DB\Click\Client\Client;
 use Rabbit\DB\DbContext;
 use ReflectionException;
 use SeasClick;
@@ -27,6 +29,7 @@ class Connection extends \Rabbit\DB\Connection
     protected bool $compression;
     protected string $host;
     protected int $port;
+    protected bool $isExt = false;
 
     /**
      * Connection constructor.
@@ -47,6 +50,7 @@ class Connection extends \Rabbit\DB\Connection
         );
         $this->database = (string)ArrayHelper::remove($query, 'dbname');
         $this->compression = (bool)ArrayHelper::remove($query, 'compression', true);
+        $this->isExt = (bool)ArrayHelper::remove($query, 'isext', false);
     }
 
     /**
@@ -94,18 +98,23 @@ class Connection extends \Rabbit\DB\Connection
     }
 
     /**
-     * @return SeasClick
+     * @return SeasClick|Client
      */
     public function createPdoInstance()
     {
-        $client = new SeasClick([
-            "host" => $this->host,
-            "port" => $this->port,
-            "compression" => $this->compression,
-            "database" => $this->database,
-            "user" => $this->username,
-            "passwd" => $this->password
-        ]);
+        if ($this->isExt) {
+            $client = new SeasClick([
+                "host" => $this->host,
+                "port" => $this->port,
+                "compression" => $this->compression,
+                "database" => $this->database,
+                "user" => $this->username,
+                "passwd" => $this->password
+            ]);
+        } else {
+            $client = new Client($this->host, $this->port, $this->username, $this->password, $this->database);
+        }
+
         return $client;
     }
 

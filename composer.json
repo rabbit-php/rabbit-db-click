@@ -12,7 +12,6 @@
   "require": {
     "php": ">=7.4.0",
     "ext-swoole": ">=4.5.0",
-    "ext-seasclick": "*",
     "rabbit/base": "dev-master",
     "rabbit/cache": "dev-master",
     "rabbit/parser": "dev-master",
