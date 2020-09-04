@@ -156,14 +156,13 @@ class Client
                     ];
                     $this->read->flush();
                     break;
-                case self::SERVER_TOTALS:
-                case self::SERVER_EXTREMES:
-                    break;
                 case self::SERVER_PONG:
                     $this->read->flush();
                     return null;
+                case self::SERVER_TOTALS:
+                case self::SERVER_EXTREMES:
                 default:
-                    throw new Exception('undefined code ' . $code, \null, 10005);
+                    throw new Exception('undefined code ' . $code, null, 10005);
             }
             $code = null;
         } while (true);
