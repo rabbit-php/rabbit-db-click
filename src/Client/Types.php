@@ -165,7 +165,7 @@ class Types
      * @param string $type
      * @return void
      */
-    protected function readFormat(string $data, string $type)
+    protected function readFormat($data, string $type)
     {
         if (isset(self::$typePack[$type])) {
             return $data;
@@ -204,7 +204,7 @@ class Types
      * @param string $type
      * @return void
      */
-    protected function sInfo(string $type): string
+    protected function sInfo(string $type)
     {
         $type = strtolower(trim($type));
         if (isset(self::$typePack[$type])) {

@@ -144,7 +144,7 @@ class Client
                     break;
                 case self::SERVER_END_OF_STREAM:
                     $this->read->flush();
-                    return $this->totalRow;
+                    return $this->rowData;
                 case self::SERVER_PROFILE_INFO:
                     $profileInfo = [
                         'rows'                         => $this->read->number(),
@@ -311,6 +311,11 @@ class Client
         $this->sendQuery($sql);
         $this->writeEnd();
         return $this->receive();
+    }
+
+    public function select(string $sql)
+    {
+        return $this->execute($sql);
     }
 
     /**
