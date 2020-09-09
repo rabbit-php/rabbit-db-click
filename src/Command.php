@@ -1,10 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rabbit\DB\Click;
 
 use Exception;
 use Generator;
+use OneCk\Client;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\DB\DataReader;
@@ -165,7 +167,11 @@ class Command extends \Rabbit\DB\Command
         $this->logQuery($rawSql);
 
         try {
-            $data = $this->db->select($rawSql);
+            if ($this->db instanceof Client) {
+                $data = $this->db->query($rawSql);
+            } else {
+                $data = $this->db->select($rawSql);
+            }
             $result = $this->prepareResult($data, $method);
         } catch (Exception $e) {
             throw new Exception("Query error: " . $e->getMessage());
@@ -212,7 +218,11 @@ class Command extends \Rabbit\DB\Command
      */
     public function insert(string $table, $columns): self
     {
-        $this->executed = $this->db->insert($table, array_keys($columns), array_values($columns));
+        if ($this->db instanceof Client) {
+            $this->db->insert($table, $columns);
+        } else {
+            $this->executed = $this->db->insert($table, array_keys($columns), array_values($columns));
+        }
         return $this;
     }
 
@@ -224,7 +234,13 @@ class Command extends \Rabbit\DB\Command
      */
     public function batchInsert(string $table, array $columns, $rows): self
     {
-        $this->executed = $this->db->insert($table, $columns, $rows);
+        if ($this->db instanceof Client) {
+            $this->db->writeStart($table, $columns);
+            $this->db->writeBlock($rows);
+            $this->db->writeEnd();
+        } else {
+            $this->executed = $this->db->insert($table, $columns, $rows);
+        }
         return $this;
     }
 

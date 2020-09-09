@@ -6,10 +6,10 @@ namespace Rabbit\DB\Click;
 
 use DI\DependencyException;
 use DI\NotFoundException;
+use OneCk\Client;
 use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\Base\App;
 use Rabbit\Base\Helper\ArrayHelper;
-use Rabbit\DB\Click\Client\Client;
 use Rabbit\DB\DbContext;
 use ReflectionException;
 use SeasClick;
@@ -112,7 +112,7 @@ class Connection extends \Rabbit\DB\Connection
                 "passwd" => $this->password
             ]);
         } else {
-            $client = new Client($this->host, $this->port, $this->username, $this->password, $this->database);
+            $client = new Client("tcp://$this->host:$this->port", $this->username, $this->password, $this->database);
         }
 
         return $client;

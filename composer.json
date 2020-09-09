@@ -19,7 +19,8 @@
     "rabbit/active-record": "dev-master",
     "rabbit/db": "dev-master",
     "rabbit/httpclient": "dev-master",
-    "rabbit/db-clickhouse": "dev-master"
+    "rabbit/db-clickhouse": "dev-master",
+    "lizhichao/one-ck": "*"
   },
   "require-dev": {
     "swoole/ide-helper": "@dev",
