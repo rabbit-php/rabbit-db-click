@@ -131,7 +131,7 @@ class Connection extends \Rabbit\DB\Connection
         $this->open();
         while (true) {
             try {
-                $conn = DbContext::get($this->poolName, $this->driver);
+                $conn = DbContext::get($this->poolKey, $this->driver);
                 return $conn->$name(...$arguments);
             } catch (Throwable $exception) {
                 if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt++)) {
