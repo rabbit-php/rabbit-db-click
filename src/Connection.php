@@ -30,6 +30,7 @@ class Connection extends \Rabbit\DB\Connection
     protected string $host;
     protected int $port;
     protected bool $isExt = false;
+    protected int $timeout = 3;
 
     /**
      * Connection constructor.
@@ -50,6 +51,7 @@ class Connection extends \Rabbit\DB\Connection
         );
         $this->database = (string)ArrayHelper::remove($query, 'dbname');
         $this->compression = (bool)ArrayHelper::remove($query, 'compression', true);
+        $this->timeout = (int)ArrayHelper::remove($query, 'timeout', $this->getPool()->getTimeout());
         $this->isExt = (bool)ArrayHelper::remove($query, 'isext', false);
     }
 
@@ -112,7 +114,7 @@ class Connection extends \Rabbit\DB\Connection
                 "passwd" => $this->password
             ]);
         } else {
-            $client = new Client("tcp://$this->host:$this->port", $this->username, $this->password, $this->database);
+            $client = new Client("tcp://$this->host:$this->port", $this->username, $this->password, $this->database, ['time_out' => $this->timeout]);
         }
 
         return $client;
