@@ -58,7 +58,7 @@ class Command extends \Rabbit\DB\Command
             $rawSql = $this->getRawSql();
 
             $this->logQuery($rawSql, 'clickhouse');
-            $res = $this->db->execute($rawSql);
+            $res = $this->db->query($rawSql);
         } else {
             $this->logQuery("Inserted with SeasClick", 'clickhouse');
             $res = $this->executed;

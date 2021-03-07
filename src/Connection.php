@@ -132,6 +132,9 @@ class Connection extends \Rabbit\DB\Connection
         while (true) {
             try {
                 $conn = DbContext::get($this->poolKey, $this->driver);
+                if ($conn instanceof SeasClick && $name === 'query') {
+                    return $conn->execute(...$arguments);
+                }
                 return $conn->$name(...$arguments);
             } catch (Throwable $exception) {
                 if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt++)) {
