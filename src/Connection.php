@@ -41,7 +41,7 @@ class Connection extends \Rabbit\DB\Connection
     {
         parent::__construct($dsn);
         $this->poolKey = $poolKey;
-        $this->driver = 'click';
+        $this->driver = 'clickhouse';
         $parsed = $this->parseDsn;
         isset($parsed['query']) ? parse_str($parsed['query'], $parsed['query']) : $parsed['query'] = [];
         [$this->host, $this->port, $this->username, $this->password, $query] = ArrayHelper::getValueByArray(
@@ -133,7 +133,7 @@ class Connection extends \Rabbit\DB\Connection
         $this->open();
         while (true) {
             try {
-                $conn = DbContext::get($this->poolKey, $this->driver);
+                $conn = DbContext::get($this->poolKey);
                 if ($conn instanceof SeasClick && $name === 'query') {
                     return $conn->execute(...$arguments);
                 }
