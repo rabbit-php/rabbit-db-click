@@ -10,7 +10,9 @@ use OneCk\Client;
 use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\Base\App;
 use Rabbit\Base\Helper\ArrayHelper;
+use Rabbit\DB\ClickHouse\Query;
 use Rabbit\DB\DbContext;
+use Rabbit\DB\QueryInterface;
 use ReflectionException;
 use SeasClick;
 use Throwable;
@@ -180,5 +182,10 @@ class Connection extends \Rabbit\DB\Connection
      */
     public function setInsertId($conn = null): void
     {
+    }
+
+    public function buildQuery(): QueryInterface
+    {
+        return new Query($this);
     }
 }
