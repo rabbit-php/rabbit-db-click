@@ -53,7 +53,7 @@ class Connection extends \Rabbit\DB\Connection
         );
         $this->database = (string)ArrayHelper::remove($query, 'dbname');
         $this->compression = (bool)ArrayHelper::remove($query, 'compression', true);
-        $this->timeout = (int)ArrayHelper::remove($query, 'timeout', $this->getPool()->getTimeout());
+        $this->timeout = (int)ArrayHelper::remove($query, 'timeout', $this->getPool()?->getTimeout() ?? $this->timeout);
         $this->isExt = (bool)ArrayHelper::remove($query, 'isext', false);
     }
 
