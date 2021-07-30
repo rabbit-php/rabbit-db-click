@@ -85,7 +85,7 @@ class ClickTarget extends AbstractTarget
                             $log[$name] = trim($value);
                     }
                 }
-                $this->channel->push($log);
+                $this->stream->write([$log]);
             }
         }
     }
@@ -96,9 +96,6 @@ class ClickTarget extends AbstractTarget
      */
     protected function write(): void
     {
-        loop(function () {
-            $logs = $this->getLogs();
-            !empty($logs) && $this->stream->write($logs);
-        });
+        $this->stream->send();
     }
 }

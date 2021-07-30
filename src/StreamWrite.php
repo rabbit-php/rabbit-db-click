@@ -12,43 +12,47 @@ class StreamWrite
     private array $field;
     private ?Client $client = null;
     private string $db;
-    private bool $isStart = false;
+    private $channel;
+    private int $num = 0;
 
     public function __construct(string $table, array $field, string $db = 'click')
     {
         $this->table = $table;
         $this->field = $field;
         $this->db = $db;
-    }
-
-    public function start(): void
-    {
-        if ($this->client === null) {
-            $client = getDI('db')->get($this->db);
-            $client->getPool()->sub();
-            $client->open();
-            $this->client = $client->getConn();
-        }
-        if (!$this->isStart) {
-            $this->isStart = true;
-            $this->client->writeStart($this->table, $this->field);
-        }
+        $this->channel = makeChannel();
     }
 
     public function write(array $data): void
     {
-        if (!$this->isStart) {
-            $this->start();
-        }
-        $this->client->writeBlock($data);
+        $this->channel->push($data);
     }
 
-    public function flush(): void
+    public function send(int $sleep = 3): void
     {
-        if ($this->isStart) {
-            $this->isStart = false;
-            $this->client->writeEnd();
-            $this->start();
+        static $run = false;
+        if (!$run) {
+            $run = true;
+            $client = getDI('db')->get($this->db);
+            $client->getPool()->sub();
+            $client->open();
+            $this->client = $client->getConn();
+            $this->client->writeStart($this->table, $this->field);
+            $time = time();
+            loop(function () use (&$time, $sleep) {
+                $data = $this->channel->pop($sleep);
+                if ($data !== false) {
+                    $this->client->writeBlock($data);
+                    $this->num++;
+                }
+                $now = time();
+                if ($this->num > 0 && $now - $time > $sleep) {
+                    $this->client->writeEnd();
+                    $this->client->writeStart($this->table, $this->field);
+                    $time = $now;
+                    $this->num = 0;
+                }
+            });
         }
     }
 }
