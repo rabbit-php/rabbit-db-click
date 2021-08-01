@@ -188,4 +188,9 @@ class Connection extends \Rabbit\DB\Connection
     {
         return new Query($this);
     }
+
+    public function getIsExt(): bool
+    {
+        return $this->isExt;
+    }
 }

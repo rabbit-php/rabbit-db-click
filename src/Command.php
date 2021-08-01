@@ -169,10 +169,10 @@ class Command extends \Rabbit\DB\Command
             $this->logQuery($rawSql);
 
             try {
-                if ($this->db instanceof Client) {
-                    $data = $this->db->query($rawSql);
-                } else {
+                if ($this->db->getIsExt()) {
                     $data = $this->db->select($rawSql);
+                } else {
+                    $data = $this->db->query($rawSql);
                 }
                 $result = $this->prepareResult($data, $method);
             } catch (Exception $e) {
