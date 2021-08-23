@@ -157,7 +157,7 @@ class Command extends \Rabbit\DB\Command
                 $method,
                 $fetchMode,
                 $this->db->dsn,
-                $rawSql ?: $rawSql = $this->getRawSql(),
+                $rawSql,
             ]);
             $key = extension_loaded('igbinary') ? igbinary_serialize($cacheKey) : serialize($cacheKey);
             $key = md5($key);
