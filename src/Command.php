@@ -9,6 +9,7 @@ use Generator;
 use OneCk\Client;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
+use Rabbit\Base\App;
 use Rabbit\DB\DataReader;
 use Rabbit\DB\Query;
 use Throwable;
@@ -105,7 +106,7 @@ class Command extends \Rabbit\DB\Command
             }
         }
 
-        $func = function () use ($method, $rawSql, $fetchMode) {
+        $func = function () use ($method, &$rawSql, $fetchMode) {
             if ($method !== '') {
                 $info = $this->db->getQueryCacheInfo($this->queryCacheDuration, $this->cache);
                 if (is_array($info)) {
