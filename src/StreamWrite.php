@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rabbit\DB\Click;
 
 use OneCk\Client;
+use Rabbit\Base\Core\Channel;
 
 class StreamWrite
 {
@@ -20,7 +21,7 @@ class StreamWrite
         $this->table = $table;
         $this->field = $field;
         $this->db = $db;
-        $this->channel = makeChannel();
+        $this->channel = new Channel();
     }
 
     public function write(array $data): void

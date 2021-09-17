@@ -104,7 +104,7 @@ class Connection extends \Rabbit\DB\Connection
     /**
      * @return SeasClick|Client
      */
-    public function createPdoInstance()
+    public function createPdoInstance(): object
     {
         if ($this->isExt) {
             $client = new SeasClick([
@@ -180,7 +180,7 @@ class Connection extends \Rabbit\DB\Connection
     /**
      * @param null $conn
      */
-    public function setInsertId($conn = null): void
+    public function setInsertId(object $conn = null): void
     {
     }
 

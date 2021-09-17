@@ -85,7 +85,7 @@ class Command extends \Rabbit\DB\Command
      * @throws InvalidArgumentException
      * @throws Throwable
      */
-    public function queryScalar()
+    public function queryScalar(): null|string|bool|int|float|array
     {
         return $this->queryInternal(self::FETCH_SCALAR, 0);
     }
@@ -97,7 +97,7 @@ class Command extends \Rabbit\DB\Command
      * @throws InvalidArgumentException
      * @throws Throwable
      */
-    protected function queryInternal(string $method, int $fetchMode = null)
+    protected function queryInternal(string $method, int $fetchMode = null): null|string|bool|int|float|array|DataReader
     {
         $rawSql = $this->getRawSql();
         $share = $this->share ?? $this->db->share;
@@ -179,7 +179,7 @@ class Command extends \Rabbit\DB\Command
      * @param string|null $method
      * @return array|mixed
      */
-    private function prepareResult(array $result, string $method = null)
+    private function prepareResult(array $result, string $method = null): null|string|bool|int|float|array
     {
         switch ($method) {
             case self::FETCH_COLUMN:
