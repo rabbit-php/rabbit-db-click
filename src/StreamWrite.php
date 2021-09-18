@@ -13,7 +13,7 @@ class StreamWrite
     private array $field;
     private ?Client $client = null;
     private string $db;
-    private $channel;
+    private Channel $channel;
     private int $num = 0;
 
     public function __construct(string $table, array $field, string $db = 'click')
