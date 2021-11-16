@@ -210,7 +210,7 @@ class Command extends \Rabbit\DB\Command
      * @param array|Query $columns
      * @return $this
      */
-    public function insert(string $table, $columns): self
+    public function insert(string $table, array|Query $columns, bool $withUpdate = false): self
     {
         if ($this->db instanceof Client) {
             $this->db->insert($table, $columns);
