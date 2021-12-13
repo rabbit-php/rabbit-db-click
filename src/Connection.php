@@ -117,7 +117,7 @@ class Connection extends \Rabbit\DB\Connection
                 "passwd" => $this->password
             ]);
         } else {
-            $client = new Client("tcp://$this->host:$this->port", $this->username, $this->password, $this->database, ['time_out' => $this->timeout]);
+            $client = new Client("tcp://$this->host:$this->port", $this->username, $this->password, $this->database, ['socket_timeout' => $this->timeout]);
         }
 
         return $client;
