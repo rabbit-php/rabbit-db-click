@@ -12,6 +12,7 @@ use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\Base\App;
 use Rabbit\DB\DataReader;
 use Rabbit\DB\Query;
+use Rabbit\Server\ProcessShare;
 use Throwable;
 
 /**
@@ -166,15 +167,16 @@ class Command extends \Rabbit\DB\Command
             ]);
             $cacheKey = extension_loaded('igbinary') ? igbinary_serialize($cacheKey) : serialize($cacheKey);
             $cacheKey = md5($cacheKey);
-            $s = process_share($cacheKey, $func, $share);
+            $type = $this->db->shareType;
+            $s = $type($cacheKey, $func, $share);
             $status = $s->getStatus();
             if ($status === SWOOLE_CHANNEL_CLOSED) {
                 $rawSql .= '; [Query result read from channel share]';
                 $this->logQuery($rawSql);
-            } elseif ($status === $s::STATUS_PROCESS) {
+            } elseif ($status === ProcessShare::STATUS_PROCESS) {
                 $rawSql .= '; [Query result read from process share]';
                 $this->logQuery($rawSql);
-            } elseif ($status === $s::STATUS_CHANNEL) {
+            } elseif ($status === ProcessShare::STATUS_CHANNEL) {
                 $rawSql .= '; [Query result read from process channel share]';
                 $this->logQuery($rawSql);
             }
