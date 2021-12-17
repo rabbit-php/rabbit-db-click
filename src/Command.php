@@ -217,7 +217,7 @@ class Command extends \Rabbit\DB\Command
     public function insert(string $table, array|Query $columns, bool $withUpdate = false): self
     {
         if ($this->db instanceof Client) {
-            $this->db->insert($table, $columns);
+            $this->executed = $this->db->insert($table, $columns);
         } else {
             $this->executed = $this->db->insert($table, array_keys($columns), array_values($columns));
         }
@@ -236,6 +236,7 @@ class Command extends \Rabbit\DB\Command
             $this->db->writeStart($table, $columns);
             $this->db->writeBlock($rows);
             $this->db->writeEnd();
+            $this->executed = count($rows);
         } else {
             $this->executed = $this->db->insert($table, $columns, $rows);
         }
