@@ -22,14 +22,11 @@ class ClickTarget extends AbstractTarget
         ['message', 'string']
     ];
 
-    protected string $table;
-
     protected StreamWrite $stream;
 
-    public function __construct(string $table)
+    public function __construct(protected string $table)
     {
         parent::__construct();
-        $this->table = $table;
     }
 
     public function init(): void

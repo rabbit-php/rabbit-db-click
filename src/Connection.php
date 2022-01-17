@@ -26,7 +26,7 @@ class Connection extends \Rabbit\DB\Connection
     public array $schemaMap = [
         'click' => Schema::class
     ];
-    public string $database = 'default';
+    public readonly string $database;
     protected string $commandClass = Command::class;
     protected bool $compression;
     protected string $host;
@@ -39,7 +39,7 @@ class Connection extends \Rabbit\DB\Connection
      * @param string $dsn
      * @param string $poolKey
      */
-    public function __construct(string $dsn, string $poolKey)
+    public function __construct(protected string $dsn, string $poolKey)
     {
         parent::__construct($dsn);
         $this->poolKey = $poolKey;
@@ -51,7 +51,7 @@ class Connection extends \Rabbit\DB\Connection
             ['host', 'port', 'user', 'pass', 'query'],
             ['127.0.0.1', 9000, '', '', []]
         );
-        $this->database = (string)ArrayHelper::remove($query, 'dbname');
+        $this->database = (string)ArrayHelper::remove($query, 'dbname', 'default');
         $this->compression = (bool)ArrayHelper::remove($query, 'compression', true);
         $this->timeout = (int)ArrayHelper::remove($query, 'timeout', $this->getPool()?->getTimeout() ?? $this->timeout);
         $this->isExt = (bool)ArrayHelper::remove($query, 'isext', false);

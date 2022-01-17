@@ -9,18 +9,12 @@ use Rabbit\Base\Core\Channel;
 
 class StreamWrite
 {
-    private string $table;
-    private array $field;
     private ?Client $client = null;
-    private string $db;
     private Channel $channel;
     private int $num = 0;
 
-    public function __construct(string $table, array $field, string $db = 'click')
+    public function __construct(private string $table, private array $field, private string $db = 'click')
     {
-        $this->table = $table;
-        $this->field = $field;
-        $this->db = $db;
         $this->channel = new Channel();
     }
 
