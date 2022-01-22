@@ -36,18 +36,24 @@ class StreamWrite implements InitInterface
             $this->status = true;
             $this->start();
             $num = 0;
-            loop(function () use (&$num) {
+            $buffer = [];
+            loop(function () use (&$num, &$buffer) {
                 for ($i = 0; $i < $this->batch; $i++) {
                     if (false === $data = $this->channel->pop($this->sleep)) {
                         break;
                     }
+                    if (count($buffer) > 0) {
+                        $this->client->writeBlock($buffer);
+                        $buffer = [];
+                    }
                     try {
                         $this->client->writeBlock($data);
                     } catch (Throwable $e) {
+                        $buffer = [...$buffer, ...$data];
                         $this->start();
-                        $this->client->writeBlock($data);
+                    } finally {
+                        $num++;
                     }
-                    $num++;
                 }
                 if ($num > 0) {
                     $num = 0;
