@@ -7,6 +7,7 @@ namespace Rabbit\DB\Click;
 use OneCk\Client;
 use Rabbit\Base\Contract\InitInterface;
 use Rabbit\Base\Core\Channel;
+use Throwable;
 
 class StreamWrite implements InitInterface
 {
@@ -33,18 +34,19 @@ class StreamWrite implements InitInterface
     {
         if (!$this->status) {
             $this->status = true;
-            $client = getDI('db')->get($this->db);
-            $client->getPool()->sub();
-            $client->open();
-            $this->client = $client->getConn();
-            $this->client->writeStart($this->table, $this->field);
+            $this->start();
             $num = 0;
             loop(function () use (&$num) {
                 for ($i = 0; $i < $this->batch; $i++) {
                     if (false === $data = $this->channel->pop($this->sleep)) {
                         break;
                     }
-                    $this->client->writeBlock($data);
+                    try {
+                        $this->client->writeBlock($data);
+                    } catch (Throwable $e) {
+                        $this->start();
+                        $this->client->writeBlock($data);
+                    }
                     $num++;
                 }
                 if ($num > 0) {
@@ -54,5 +56,14 @@ class StreamWrite implements InitInterface
                 }
             });
         }
+    }
+
+    private function start(): void
+    {
+        $client = getDI('db')->get($this->db);
+        $client->getPool()->sub();
+        $client->open();
+        $this->client = $client->getConn();
+        $this->client->writeStart($this->table, $this->field);
     }
 }
