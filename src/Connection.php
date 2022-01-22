@@ -23,9 +23,6 @@ use Throwable;
  */
 class Connection extends \Rabbit\DB\Connection
 {
-    public array $schemaMap = [
-        'click' => Schema::class
-    ];
     public readonly string $database;
     protected string $commandClass = Command::class;
     protected bool $compression;
@@ -151,21 +148,12 @@ class Connection extends \Rabbit\DB\Connection
         }
     }
 
-    /**
-     * @return \Rabbit\DB\Schema
-     * @throws DependencyException
-     * @throws NotFoundException
-     * @throws ReflectionException
-     */
     public function getSchema(): \Rabbit\DB\Schema
     {
         if ($this->schema !== null) {
             return $this->schema;
         }
-        return $this->schema = create([
-            'class' => Schema::class,
-            'db' => $this
-        ]);
+        return $this->schema = new Schema($this);
     }
 
     public function quoteTableName(string $name): string

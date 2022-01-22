@@ -29,10 +29,10 @@ class Schema extends \Rabbit\DB\ClickHouse\Schema
      */
     protected function loadTableSchema(string $name): ?\Rabbit\DB\TableSchema
     {
-        $sql = 'SELECT * FROM system.columns WHERE `table`=:name and `database`=:database';
+        $sql = 'SELECT * FROM system.columns WHERE `table`=? and `database`=?';
         $result = $this->db->createCommand($sql, [
-            ':name' => $name,
-            ':database' => $this->db->database === null ? 'default' : $this->db->database
+            $name,
+            $this->db->database === null ? 'default' : $this->db->database
         ])->queryAll();
 
         if ($result && isset($result[0])) {

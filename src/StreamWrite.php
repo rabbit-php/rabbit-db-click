@@ -42,11 +42,11 @@ class StreamWrite implements InitInterface
                     if (false === $data = $this->channel->pop($this->sleep)) {
                         break;
                     }
-                    if (count($buffer) > 0) {
-                        $this->client->writeBlock($buffer);
-                        $buffer = [];
-                    }
                     try {
+                        if (count($buffer) > 0) {
+                            $this->client->writeBlock($buffer);
+                            $buffer = [];
+                        }
                         $this->client->writeBlock($data);
                     } catch (Throwable $e) {
                         $buffer = [...$buffer, ...$data];
