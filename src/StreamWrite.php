@@ -5,17 +5,23 @@ declare(strict_types=1);
 namespace Rabbit\DB\Click;
 
 use OneCk\Client;
+use Rabbit\Base\Contract\InitInterface;
 use Rabbit\Base\Core\Channel;
 
-class StreamWrite
+class StreamWrite implements InitInterface
 {
     private ?Client $client = null;
     private Channel $channel;
-    private int $num = 0;
+    private bool $status = false;
 
-    public function __construct(private string $table, private array $field, private string $db = 'click')
+    public function __construct(private string $table, private array $field, private int $batch = 1000, private int $sleep = 3, private string $db = 'click')
     {
         $this->channel = new Channel();
+    }
+
+    public function init(): void
+    {
+        $this->send();
     }
 
     public function write(array $data): void
@@ -23,29 +29,28 @@ class StreamWrite
         $this->channel->push($data);
     }
 
-    public function send(int $sleep = 3): void
+    public function send(): void
     {
-        static $run = false;
-        if (!$run) {
-            $run = true;
+        if (!$this->status) {
+            $this->status = true;
             $client = getDI('db')->get($this->db);
             $client->getPool()->sub();
             $client->open();
             $this->client = $client->getConn();
             $this->client->writeStart($this->table, $this->field);
-            $time = time();
-            loop(function () use (&$time, $sleep) {
-                $data = $this->channel->pop($sleep);
-                if ($data !== false) {
+            $num = 0;
+            loop(function () use (&$num) {
+                for ($i = 0; $i < $this->batch; $i++) {
+                    if (false === $data = $this->channel->pop($this->sleep)) {
+                        break;
+                    }
                     $this->client->writeBlock($data);
-                    $this->num++;
+                    $num++;
                 }
-                $now = time();
-                if ($this->num > 0 && $now - $time > $sleep) {
+                if ($num > 0) {
+                    $num = 0;
                     $this->client->writeEnd();
                     $this->client->writeStart($this->table, $this->field);
-                    $time = $now;
-                    $this->num = 0;
                 }
             });
         }

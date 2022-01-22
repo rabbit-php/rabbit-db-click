@@ -230,10 +230,13 @@ class Command extends \Rabbit\DB\Command
      * @param array|Generator $rows
      * @return $this
      */
-    public function batchInsert(string $table, array $columns, $rows): self
+    public function batchInsert(string $table, array $columns, array|Generator $rows): self
     {
         if ($this->db instanceof Client) {
             $this->db->writeStart($table, $columns);
+            foreach ($rows as &$row) {
+                $row = \array_combine($columns, $row);
+            }
             $this->db->writeBlock($rows);
             $this->db->writeEnd();
             $this->executed = count($rows);

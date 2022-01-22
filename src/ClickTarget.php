@@ -29,16 +29,6 @@ class ClickTarget extends AbstractTarget
         parent::__construct();
     }
 
-    public function init(): void
-    {
-        $fields = [];
-        foreach ($this->template as $items) {
-            [$fields[], $_] = $items;
-        }
-        $this->stream = new StreamWrite($this->table, ['appname', ...$fields]);
-        parent::init();
-    }
-
     /**
      * @param array $messages
      * @throws Exception
@@ -93,6 +83,11 @@ class ClickTarget extends AbstractTarget
      */
     protected function write(): void
     {
+        $fields = [];
+        foreach ($this->template as $items) {
+            [$fields[], $_] = $items;
+        }
+        $this->stream = new StreamWrite($this->table, ['appname', ...$fields]);
         $this->stream->send();
     }
 }
