@@ -108,7 +108,7 @@ class Command extends \Rabbit\DB\Command
             }
         }
 
-        $func = function () use ($method, &$rawSql, $fetchMode) {
+        $func = function () use ($method, &$rawSql, $fetchMode): mixed {
             if ($method !== '') {
                 $info = $this->db->getQueryCacheInfo($this->queryCacheDuration, $this->cache);
                 if (is_array($info)) {
@@ -194,14 +194,11 @@ class Command extends \Rabbit\DB\Command
     {
         switch ($method) {
             case self::FETCH_COLUMN:
-                return array_map(function ($a) {
+                return array_map(function (array $a): mixed {
                     return array_values($a)[0];
                 }, $result);
             case self::FETCH_SCALAR:
-                if (array_key_exists(0, $result)) {
-                    return current($result[0]);
-                }
-                break;
+                return current($result[0] ?? []);
             case self::FETCH:
                 return is_array($result) ? array_shift($result) : $result;
         }
