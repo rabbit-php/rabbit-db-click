@@ -66,7 +66,7 @@ class StreamWrite implements InitInterface
 
     private function start(): void
     {
-        $client = getDI('db')->get($this->db);
+        $client = service('db')->get($this->db);
         $client->getPool()->sub();
         $client->open();
         $this->client = $client->getConn();
