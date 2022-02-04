@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Rabbit\DB\Click;
 
-use DI\DependencyException;
-use DI\NotFoundException;
 use OneCk\Client;
 use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\Base\App;
@@ -17,10 +15,6 @@ use ReflectionException;
 use SeasClick;
 use Throwable;
 
-/**
- * Class Connection
- * @package Rabbit\DB\Click
- */
 class Connection extends \Rabbit\DB\Connection
 {
     public readonly string $database;
@@ -31,11 +25,6 @@ class Connection extends \Rabbit\DB\Connection
     protected bool $isExt = false;
     protected int $timeout = 3;
 
-    /**
-     * Connection constructor.
-     * @param string $dsn
-     * @param string $poolKey
-     */
     public function __construct(protected string $dsn, string $poolKey)
     {
         parent::__construct($dsn);
@@ -55,43 +44,22 @@ class Connection extends \Rabbit\DB\Connection
         $this->canTransaction = false;
     }
 
-    /**
-     * @param string $value
-     * @return string
-     * @throws DependencyException
-     * @throws NotFoundException
-     * @throws InvalidArgumentException
-     * @throws Throwable
-     */
     public function quoteValue(string $value): string
     {
         return $this->getSchema()->quoteValue($value);
     }
 
-    /**
-     * @param string $sql
-     * @return string
-     */
     public function quoteSql(string $sql): string
     {
         return $sql;
     }
 
-
-    /**
-     * @return array
-     * @throws Throwable
-     */
     public function __sleep()
     {
         $this->close();
         return array_keys(get_object_vars($this));
     }
 
-
-    /**
-     * @throws Throwable
-     */
     public function close(): void
     {
         if ($this->getIsActive()) {
@@ -99,9 +67,6 @@ class Connection extends \Rabbit\DB\Connection
         }
     }
 
-    /**
-     * @return SeasClick|Client
-     */
     public function createPdoInstance(): object
     {
         if ($this->isExt) {
@@ -120,13 +85,6 @@ class Connection extends \Rabbit\DB\Connection
         return $client;
     }
 
-    /**
-     * @param $name
-     * @param $arguments
-     * @return mixed
-     * @throws InvalidArgumentException
-     * @throws Throwable
-     */
     public function __call($name, $arguments)
     {
         $attempt = 0;
@@ -166,9 +124,6 @@ class Connection extends \Rabbit\DB\Connection
         return $name;
     }
 
-    /**
-     * @param null $conn
-     */
     public function setInsertId(object $conn = null): void
     {
     }

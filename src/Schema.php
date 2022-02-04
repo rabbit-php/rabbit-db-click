@@ -4,29 +4,11 @@ declare(strict_types=1);
 
 namespace Rabbit\DB\Click;
 
-
-use DI\DependencyException;
-use DI\NotFoundException;
-use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\DB\ClickHouse\TableSchema;
 use Rabbit\DB\ColumnSchema;
-use ReflectionException;
-use Throwable;
 
-/**
- * Class Schema
- * @package Rabbit\DB\ClickHouse
- */
 class Schema extends \Rabbit\DB\ClickHouse\Schema
 {
-    /**
-     * @param string $name
-     * @return \Rabbit\DB\TableSchema|null
-     * @throws DependencyException
-     * @throws InvalidArgumentException
-     * @throws NotFoundException
-     * @throws Throwable
-     */
     protected function loadTableSchema(string $name): ?\Rabbit\DB\TableSchema
     {
         $sql = 'SELECT * FROM system.columns WHERE `table`=? and `database`=?';
@@ -51,12 +33,6 @@ class Schema extends \Rabbit\DB\ClickHouse\Schema
         return null;
     }
 
-    /**
-     * @param array $info
-     * @return ColumnSchema
-     * @throws DependencyException
-     * @throws NotFoundException|ReflectionException
-     */
     protected function loadColumnSchema(array $info): ColumnSchema
     {
         $column = $this->createColumnSchema();
