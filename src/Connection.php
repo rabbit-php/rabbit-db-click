@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Rabbit\DB\Click;
 
 use OneCk\Client;
-use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\Base\App;
 use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\DB\ClickHouse\Query;
 use Rabbit\DB\DbContext;
 use Rabbit\DB\QueryInterface;
-use ReflectionException;
 use SeasClick;
 use Throwable;
 
@@ -91,7 +89,7 @@ class Connection extends \Rabbit\DB\Connection
         $this->open();
         while (true) {
             try {
-                $conn = DbContext::get($this->poolKey);
+                $conn = DbContext::get($this->poolKey)->pdo;
                 if ($conn instanceof SeasClick && $name === 'query') {
                     return $conn->execute(...$arguments);
                 }
