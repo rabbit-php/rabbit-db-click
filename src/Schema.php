@@ -12,9 +12,17 @@ class Schema extends \Rabbit\DB\ClickHouse\Schema
     protected function loadTableSchema(string $name): ?\Rabbit\DB\TableSchema
     {
         $sql = 'SELECT * FROM system.columns WHERE `table`=? and `database`=?';
+        $tmp = explode('.', $name);
+        $database = null;
+        if (count($tmp) === 1) {
+            $name = array_shift($tmp);
+        } else {
+            $database = array_shift($tmp);
+            $name = array_shift($tmp);
+        }
         $result = $this->db->createCommand($sql, [
             $name,
-            $this->db->database === null ? 'default' : $this->db->database
+            $database ?? $this->db->database ?? 'default'
         ])->queryAll();
 
         if ($result && isset($result[0])) {
