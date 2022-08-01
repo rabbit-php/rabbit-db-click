@@ -12,9 +12,6 @@ class BatchInsert extends ClickHouseBatchInsert
 
     public function execute(): int
     {
-        if (count($this->delItems) > 0) {
-            $this->db->createCommand("ALTER TABLE {$this->table} DELETE WHERE {$this->delKey} in (" . implode(', ', $this->delItems) . ')')->execute();
-        }
         if ($this->rows) {
             $this->db->writeStart($this->table, $this->columns);
             $this->db->writeBlock($this->rows);
