@@ -42,16 +42,6 @@ class Connection extends \Rabbit\DB\Connection
         $this->canTransaction = false;
     }
 
-    public function quoteValue(string $value): string
-    {
-        return $this->getSchema()->quoteValue($value);
-    }
-
-    public function quoteSql(string $sql): string
-    {
-        return $sql;
-    }
-
     public function __sleep()
     {
         $this->close();
@@ -110,16 +100,6 @@ class Connection extends \Rabbit\DB\Connection
             return $this->schema;
         }
         return $this->schema = new Schema($this);
-    }
-
-    public function quoteTableName(string $name): string
-    {
-        return $name;
-    }
-
-    public function quoteColumnName(string $name): string
-    {
-        return $name;
     }
 
     public function setInsertId(object $conn = null): void
