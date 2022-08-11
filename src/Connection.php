@@ -22,6 +22,7 @@ class Connection extends \Rabbit\DB\Connection
     protected int $port;
     protected bool $isExt = false;
     protected int $timeout = 3;
+    public readonly array $settings;
 
     public function __construct(protected string $dsn, string $poolKey)
     {
@@ -39,6 +40,7 @@ class Connection extends \Rabbit\DB\Connection
         $this->compression = (bool)ArrayHelper::remove($query, 'compression', true);
         $this->timeout = (int)ArrayHelper::remove($query, 'timeout', $this->getPool()?->getTimeout() ?? $this->timeout);
         $this->isExt = (bool)ArrayHelper::remove($query, 'isext', false);
+        $this->settings = $query;
         $this->canTransaction = false;
     }
 

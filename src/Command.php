@@ -29,20 +29,6 @@ class Command extends \Rabbit\DB\Command
     public int $fetchMode = 0;
     private ?int $executed = null;
 
-    public function update(string $table, array $columns, string|array $condition = '', array $params = [], string $settings = ''): self
-    {
-        $sql = $this->db->getQueryBuilder()->update($table, $columns, $condition, $params, $settings);
-
-        return $this->setSql($sql)->bindValues($params);
-    }
-
-    public function delete(string $table, string|array $condition = '', array $params = [], string $settings = ''): self
-    {
-        $sql = $this->db->getQueryBuilder()->delete($table, $condition, $params, $settings);
-
-        return $this->setSql($sql)->bindValues($params);
-    }
-
     /**
      * @param array $values
      * @return $this
@@ -72,7 +58,9 @@ class Command extends \Rabbit\DB\Command
     {
         if ($this->executed === null) {
             $rawSql = $this->getRawSql();
-
+            if (count($this->db->settings) > 0) {
+                $rawSql += " settings " . implode(',', $this->db->settings);
+            }
             $this->logQuery($rawSql, 'clickhouse');
             $res = $this->db->query($rawSql);
         } else {
@@ -148,6 +136,9 @@ class Command extends \Rabbit\DB\Command
                 }
             }
 
+            if (count($this->db->settings) > 0) {
+                $rawSql .= " settings " . str_replace('&', ',', http_build_query($this->db->settings));
+            }
             $this->logQuery($rawSql, 'clickhouse');
 
             try {
