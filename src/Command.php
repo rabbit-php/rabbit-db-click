@@ -59,7 +59,7 @@ class Command extends \Rabbit\DB\Command
         if ($this->executed === null) {
             $rawSql = $this->getRawSql();
             if (count($this->db->settings) > 0) {
-                $rawSql += " settings " . implode(',', $this->db->settings);
+                $rawSql .= " settings " . implode(',', $this->db->settings);
             }
             $this->logQuery($rawSql, 'clickhouse');
             $res = $this->db->query($rawSql);
