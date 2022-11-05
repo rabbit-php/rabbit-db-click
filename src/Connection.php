@@ -10,7 +10,6 @@ use Rabbit\Base\Helper\ArrayHelper;
 use Rabbit\DB\ClickHouse\Query;
 use Rabbit\DB\DbContext;
 use Rabbit\DB\QueryInterface;
-use SeasClick;
 use Throwable;
 
 class Connection extends \Rabbit\DB\Connection
@@ -20,7 +19,6 @@ class Connection extends \Rabbit\DB\Connection
     protected bool $compression;
     protected string $host;
     protected int $port;
-    protected bool $isExt = false;
     protected int $timeout = 3;
     public readonly array $settings;
 
@@ -39,7 +37,6 @@ class Connection extends \Rabbit\DB\Connection
         $this->database = (string)ArrayHelper::remove($query, 'dbname', 'default');
         $this->compression = (bool)ArrayHelper::remove($query, 'compression', true);
         $this->timeout = (int)ArrayHelper::remove($query, 'timeout', $this->getPool()?->getTimeout() ?? $this->timeout);
-        $this->isExt = (bool)ArrayHelper::remove($query, 'isext', false);
         $this->settings = $query;
         $this->canTransaction = false;
     }
@@ -59,20 +56,7 @@ class Connection extends \Rabbit\DB\Connection
 
     public function createPdoInstance(): object
     {
-        if ($this->isExt) {
-            $client = new SeasClick([
-                "host" => $this->host,
-                "port" => $this->port,
-                "compression" => $this->compression,
-                "database" => $this->database,
-                "user" => $this->username,
-                "passwd" => $this->password
-            ]);
-        } else {
-            $client = new Client("tcp://$this->host:$this->port", $this->username, $this->password, $this->database, ['socket_timeout' => $this->timeout]);
-        }
-
-        return $client;
+        return new Client("tcp://$this->host:$this->port", $this->username, $this->password, $this->database, ['socket_timeout' => $this->timeout]);
     }
 
     public function __call($name, $arguments)
@@ -82,9 +66,6 @@ class Connection extends \Rabbit\DB\Connection
         while (true) {
             try {
                 $conn = DbContext::get($this->poolKey)->pdo;
-                if ($conn instanceof SeasClick && $name === 'query') {
-                    return $conn->execute(...$arguments);
-                }
                 return $conn->$name(...$arguments);
             } catch (Throwable $exception) {
                 if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt++)) {
@@ -111,10 +92,5 @@ class Connection extends \Rabbit\DB\Connection
     public function buildQuery(): QueryInterface
     {
         return new Query($this);
-    }
-
-    public function getIsExt(): bool
-    {
-        return $this->isExt;
     }
 }

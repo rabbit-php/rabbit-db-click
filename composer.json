@@ -1,6 +1,6 @@
 {
   "name": "rabbit/db-click",
-  "description": "rabbit clickhouse client with SeasClick ext.",
+  "description": "rabbit clickhouse client.",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -24,9 +24,6 @@
   "require-dev": {
     "swoole/ide-helper": "@dev",
     "phpunit/phpunit": "*"
-  },
-  "suggest": {
-    "ext-seasclick": "Use https://github.com/amuluowin/SeasClick to support swoole"
   },
   "autoload": {
     "psr-4": {

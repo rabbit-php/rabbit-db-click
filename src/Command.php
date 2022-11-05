@@ -27,7 +27,6 @@ class Command extends \Rabbit\DB\Command
     const FETCH_SCALAR = 'fetchScalar';
 
     public int $fetchMode = 0;
-    private ?int $executed = null;
 
     /**
      * @param array $values
@@ -56,20 +55,12 @@ class Command extends \Rabbit\DB\Command
      */
     public function execute(): int
     {
-        if ($this->executed === null) {
-            $rawSql = $this->getRawSql();
-            if (count($this->db->settings) > 0) {
-                $rawSql .= " settings " . str_replace('&', ',', http_build_query($this->db->settings));
-            }
-            $this->logQuery($rawSql, 'clickhouse');
-            $res = $this->db->query($rawSql);
-        } else {
-            $log = "Inserted with SeasClick";
-            $this->logQuery($log, 'clickhouse');
-            $res = $this->executed;
-            $this->executed = null;
+        $rawSql = $this->getRawSql();
+        if (count($this->db->settings) > 0) {
+            $rawSql .= " settings " . str_replace('&', ',', http_build_query($this->db->settings));
         }
-        return (int)$res;
+        $this->logQuery($rawSql, 'clickhouse');
+        return (int)$this->db->query($rawSql);
     }
 
 
@@ -142,11 +133,7 @@ class Command extends \Rabbit\DB\Command
             $this->logQuery($rawSql, 'clickhouse');
 
             try {
-                if ($this->db->getIsExt()) {
-                    $data = $this->db->select($rawSql);
-                } else {
-                    $data = $this->db->query($rawSql);
-                }
+                $data = $this->db->query($rawSql);
                 $result = $this->prepareResult($data, $method);
             } catch (Exception $e) {
                 throw new Exception("Query error: " . $e->getMessage());
