@@ -52,6 +52,7 @@ class Connection extends \Rabbit\DB\Connection
         if ($this->getIsActive()) {
             App::warning('Closing DB connection: ' . $this->shortDsn, 'clickhouse');
         }
+        DbContext::delete($this->poolKey);
     }
 
     public function createPdoInstance(): object
@@ -69,6 +70,7 @@ class Connection extends \Rabbit\DB\Connection
                 return $conn->$name(...$arguments);
             } catch (Throwable $exception) {
                 if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt++)) {
+                    $this->close();
                     App::error($exception->getMessage());
                     throw $exception;
                 }
