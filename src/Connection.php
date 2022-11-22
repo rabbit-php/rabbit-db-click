@@ -69,7 +69,7 @@ class Connection extends \Rabbit\DB\Connection
                 $conn = DbContext::get($this->poolKey)->pdo;
                 return $conn->$name(...$arguments);
             } catch (Throwable $exception) {
-                if (($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt++)) {
+                if ($name !== 'query' || ($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt++)) {
                     $this->close();
                     App::error($exception->getMessage());
                     throw $exception;

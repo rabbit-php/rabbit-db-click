@@ -27,7 +27,7 @@ class Command extends \Rabbit\DB\Command
     const FETCH_SCALAR = 'fetchScalar';
 
     public int $fetchMode = 0;
-
+    private ?int $executed = null;
     /**
      * @param array $values
      * @return $this
@@ -55,12 +55,18 @@ class Command extends \Rabbit\DB\Command
      */
     public function execute(): int
     {
-        $rawSql = $this->getRawSql();
-        if (count($this->db->settings) > 0) {
-            $rawSql .= " settings " . str_replace('&', ',', http_build_query($this->db->settings));
+        if ($this->executed === null) {
+            $rawSql = $this->getRawSql();
+            if (count($this->db->settings) > 0) {
+                $rawSql .= " settings " . str_replace('&', ',', http_build_query($this->db->settings));
+            }
+            $this->logQuery($rawSql);
+            $res = $this->db->query($rawSql);
+        } else {
+            $res = $this->executed;
+            $this->executed = null;
         }
-        $this->logQuery($rawSql, 'clickhouse');
-        return (int)$this->db->query($rawSql);
+        return (int)$res;
     }
 
 
@@ -120,7 +126,7 @@ class Command extends \Rabbit\DB\Command
                         $result = unserialize($ret);
                         if (is_array($result) && isset($result[0])) {
                             $rawSql .= '; [Query result served from cache]';
-                            $this->logQuery($rawSql, 'clickhouse');
+                            $this->logQuery($rawSql);
                             return $this->prepareResult($result[0], $method);
                         }
                     }
@@ -130,7 +136,7 @@ class Command extends \Rabbit\DB\Command
             if (count($this->db->settings) > 0) {
                 $rawSql .= " settings " . str_replace('&', ',', http_build_query($this->db->settings));
             }
-            $this->logQuery($rawSql, 'clickhouse');
+            $this->logQuery($rawSql);
 
             try {
                 $data = $this->db->query($rawSql);
@@ -204,11 +210,7 @@ class Command extends \Rabbit\DB\Command
      */
     public function insert(string $table, array|Query $columns, bool $withUpdate = false): self
     {
-        if ($this->db instanceof Client) {
-            $this->executed = $this->db->insert($table, $columns);
-        } else {
-            $this->executed = $this->db->insert($table, array_keys($columns), array_values($columns));
-        }
+        $this->executed = $this->db->insert($table, $columns);
         return $this;
     }
 
@@ -220,17 +222,13 @@ class Command extends \Rabbit\DB\Command
      */
     public function batchInsert(string $table, array $columns, array|Generator $rows): self
     {
-        if ($this->db instanceof Client) {
-            $this->db->writeStart($table, $columns);
-            foreach ($rows as &$row) {
-                $row = \array_combine($columns, $row);
-            }
-            $this->db->writeBlock($rows);
-            $this->db->writeEnd();
-            $this->executed = count($rows);
-        } else {
-            $this->executed = $this->db->insert($table, $columns, $rows);
+        $this->db->writeStart($table, $columns);
+        foreach ($rows as &$row) {
+            $row = \array_combine($columns, $row);
         }
+        $this->db->writeBlock($rows);
+        $this->db->writeEnd();
+        $this->executed = count($rows);
         return $this;
     }
 
