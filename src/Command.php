@@ -57,11 +57,8 @@ class Command extends \Rabbit\DB\Command
     {
         if ($this->executed === null) {
             $rawSql = $this->getRawSql();
-            if (count($this->db->settings) > 0) {
-                $rawSql .= " settings " . str_replace('&', ',', http_build_query($this->db->settings));
-            }
             $this->logQuery($rawSql);
-            $res = $this->db->query($rawSql);
+            $res = $this->db->query($rawSql, $this->db->settings);
         } else {
             $res = $this->executed;
             $this->executed = null;
@@ -133,13 +130,10 @@ class Command extends \Rabbit\DB\Command
                 }
             }
 
-            if (count($this->db->settings) > 0) {
-                $rawSql .= " settings " . str_replace('&', ',', http_build_query($this->db->settings));
-            }
             $this->logQuery($rawSql);
 
             try {
-                $data = $this->db->query($rawSql);
+                $data = $this->db->query($rawSql, $this->db->settings);
                 $result = $this->prepareResult($data, $method);
             } catch (Exception $e) {
                 throw new Exception("Query error: " . $e->getMessage());
