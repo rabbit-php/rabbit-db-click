@@ -19,7 +19,7 @@
     "rabbit/db": "dev-master",
     "rabbit/httpclient": "dev-master",
     "rabbit/db-clickhouse": "dev-master",
-    "rabbit/ck-client": "*"
+    "rabbit/ck-client": "dev-master"
   },
   "require-dev": {
     "swoole/ide-helper": "@dev",
