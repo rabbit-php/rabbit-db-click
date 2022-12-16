@@ -6,7 +6,6 @@ namespace Rabbit\DB\Click;
 
 use Exception;
 use Generator;
-use OneCk\Client;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 use Rabbit\Base\App;
