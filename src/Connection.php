@@ -57,7 +57,13 @@ class Connection extends \Rabbit\DB\Connection
 
     public function createPdoInstance(): object
     {
-        return new Client("tcp://$this->host:$this->port", $this->username, $this->password, $this->database, ['socket_timeout' => $this->timeout]);
+        return create(Client::class, [
+            'dsn' => "tcp://$this->host:$this->port",
+            'username' => $this->username,
+            'password' => $this->password,
+            'database' => $this->database,
+            'options' => ['socket_timeout' => $this->timeout]
+        ], false);
     }
 
     public function __call($name, $arguments)
