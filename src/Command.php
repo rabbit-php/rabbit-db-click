@@ -56,7 +56,6 @@ class Command extends \Rabbit\DB\Command
     {
         if ($this->executed === null) {
             $rawSql = $this->getRawSql();
-            $this->logQuery($rawSql);
             $res = $this->db->query($rawSql, $this->db->settings);
         } else {
             $res = $this->executed;
