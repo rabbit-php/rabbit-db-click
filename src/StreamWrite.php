@@ -15,7 +15,7 @@ class StreamWrite implements InitInterface
     private Channel $channel;
     private bool $status = false;
 
-    public function __construct(private string $table, private array $field, private int $batch = 1000, private int $sleep = 3, private string $db = 'click')
+    public function __construct(private string $table, private array $field, readonly public int $batch = 1000, private int $sleep = 3, private string $db = 'click')
     {
         $this->channel = new Channel();
     }
