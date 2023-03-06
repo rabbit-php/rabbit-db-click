@@ -72,7 +72,6 @@ class Connection extends \Rabbit\DB\Connection
                 return $conn->$name(...$arguments);
             } catch (Throwable $exception) {
                 if ($name !== 'query' || ($retryHandler = $this->getRetryHandler()) === null || !$retryHandler->handle($exception, $attempt++)) {
-                    $this->close();
                     App::error($exception->getMessage());
                     throw $exception;
                 }
